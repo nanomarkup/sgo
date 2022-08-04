@@ -12,15 +12,15 @@ function GenDoc {
 # Synopsis: Generate sources
 task code {
     Set-Location -Path 'src'
-    $Status = Start-Process -FilePath 'sb' -ArgumentList 'code sgo' -NoNewWindow -PassThru -Wait
-    Assert($Status.ExitCode -eq 0) 'The "code sgo" command failed'
+    $Status = Start-Process -FilePath 'sb' -ArgumentList 'code' -NoNewWindow -PassThru -Wait
+    Assert($Status.ExitCode -eq 0) 'The "code" command failed'
 }
 
 # Synopsis: Build sources
 task build {
     Set-Location -Path 'src'
-    $Status = Start-Process -FilePath 'sb' -ArgumentList 'build sgo' -NoNewWindow -PassThru -Wait 
-    Assert($Status.ExitCode -eq 0) 'The "build sgo" command failed'
+    $Status = Start-Process -FilePath 'sb' -ArgumentList 'build' -NoNewWindow -PassThru -Wait 
+    Assert($Status.ExitCode -eq 0) 'The "build" command failed'
 }
 
 # Synopsis: Generate & build sources
@@ -29,8 +29,8 @@ task cbuild code, build
 # Synopsis: Remove generated files
 task clean {
     Set-Location -Path 'src'
-    $Status = Start-Process -FilePath 'sb' -ArgumentList 'clean sgo' -NoNewWindow -PassThru -Wait 
-    Assert($Status.ExitCode -eq 0) 'The "clean sgo" command failed'
+    $Status = Start-Process -FilePath 'sb' -ArgumentList 'clean' -NoNewWindow -PassThru -Wait 
+    Assert($Status.ExitCode -eq 0) 'The "clean" command failed'
 }
 
 # Synopsis: Install plugin
@@ -54,7 +54,7 @@ task test {
 # Synopsis: Generate documentation
 task doc {
     Set-Location -Path 'src'
-    GenDoc -PackageName 'golang'
+    GenDoc -PackageName 'app'
     GenDoc -PackageName 'helper\hashicorp\hclog'
     GenDoc -PackageName 'plugins'
     GenDoc -PackageName 'plugins\sgo'

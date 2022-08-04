@@ -1,6 +1,6 @@
 // Copyright 2022 Vitalii Noha vitalii.noga@gmail.com. All rights reserved.
 
-package golang
+package app
 
 import (
 	"bufio"
@@ -21,7 +21,7 @@ func (g *Coder) Generate(application string) error {
 	if err := checkApplication(application); err != nil {
 		return err
 	}
-	// generate a golang file and save all dependencies
+	// generate a Go file and save all dependencies
 	entry, err := g.entryPoint(application)
 	if err != nil {
 		return err

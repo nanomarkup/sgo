@@ -1,7 +1,6 @@
 sb
 
 apps:
-	sb
 	sgo
 
 defines:
@@ -13,6 +12,16 @@ defines:
 	LogWarn 4
 	LogError 5
 	LogOff 6
+
+sgo:
+    coder sgo
+    entry {Src}/plugins/sgo.Plugin
+
+{Src}/plugins/sgo.Plugin:
+	Coder *{Src}/app.Coder
+	Builder *{Src}/app.Builder
+	Handshake github.com/hashicorp/go-plugin.HandshakeConfig
+	Logger {Src}/helper/hashicorp/hclog.NewFileOut("sgo", {LogInfo})
 
 github.com/hashicorp/go-plugin.HandshakeConfig:
 	ProtocolVersion 1

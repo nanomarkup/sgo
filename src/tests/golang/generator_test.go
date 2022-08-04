@@ -1,14 +1,14 @@
 package golang
 
 import (
-	"github.com/sapplications/sgo/src/golang"
+	"github.com/sapplications/sgo/src/app"
 	helper "github.com/sapplications/sgo/src/helper/hashicorp/hclog"
 	"gopkg.in/check.v1"
 )
 
 func (s *GoSuite) TestGenerate(c *check.C) {
 	c.Skip("Needs to fix...")
-	g := golang.Coder{
+	g := app.Coder{
 		Logger: helper.NewStdOut("sgo", helper.LogLever.Debug),
 	}
 	g.Init(

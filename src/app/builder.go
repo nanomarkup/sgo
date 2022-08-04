@@ -1,6 +1,6 @@
 // Copyright 2022 Vitalii Noha vitalii.noga@gmail.com. All rights reserved.
 
-package golang
+package app
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ func (b *Builder) Build(application string) error {
 	if err := checkApplication(application); err != nil {
 		return err
 	}
-	// check the golang file with all dependencies is exist
+	// check the Go file with all dependencies is exist
 	wd, _ := os.Getwd()
 	folderPath := filepath.Join(wd, application)
 	filePath := filepath.Join(folderPath, depsFileName)
@@ -28,7 +28,7 @@ func (b *Builder) Build(application string) error {
 		b.Logger,
 		b.items,
 	}
-	// generate a golang app file if it is missing
+	// generate a Go app file if it is missing
 	filePath = filepath.Join(folderPath, appFileName)
 	if _, err := os.Stat(filePath); err != nil {
 		if os.IsNotExist(err) {
@@ -49,7 +49,7 @@ func (b *Builder) Clean(application string) error {
 	if err := checkApplication(application); err != nil {
 		return err
 	}
-	// check the golang file with all dependencies is exist
+	// check the Go file with all dependencies is exist
 	wd, _ := os.Getwd()
 	folderPath := filepath.Join(wd, application)
 	if _, err := os.Stat(folderPath); err != nil {

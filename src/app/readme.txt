@@ -1,6 +1,6 @@
-package golang // import "github.com/sapplications/sgo/src/golang"
+package app // import "github.com/sapplications/sgo/src/app"
 
-Package golang generates Go sources of an application.
+Package app generates Go sources of an application.
 
 TYPES
 
