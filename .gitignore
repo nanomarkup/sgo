@@ -1,0 +1,20 @@
+# Binary files
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Generated the test files (go test -c)
+*.test
+
+# Output of the go coverage tool, specifically when using LiteIDE
+*.out
+
+# Dependency directories
+# vendor/
+
+.vscode
+*.log
+
+/src/sgo/
+test/

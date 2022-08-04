@@ -1,0 +1,12 @@
+improvements & bugs
+    - update documentation
+    - use a short name for functions (try it for adapters)
+    - check all methods in interfaces
+    - fix all external dependencies - github.com/*
+    - validate sb code before running the gen command
+    - resolve interfaces with different number of methods, typeA can have less number of methods than typeB
+          fix "Builder    interface{}" to "Builder    builder" of "SmartBuilder" struct in "app" package
+
+core features
+    - add a struct initialization into an item use brackets for overriding global settings, usage: field struct { code }
+    - use a "named type" as parameter (at least for interfaces)

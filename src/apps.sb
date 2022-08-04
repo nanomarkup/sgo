@@ -1,0 +1,20 @@
+sb
+
+apps:
+	sb
+	sgo
+
+defines:
+	Src github.com/sapplications/sgo/src
+	LogDefault 0
+	LogTrace 1
+	LogDebug 2
+	LogInfo 3
+	LogWarn 4
+	LogError 5
+	LogOff 6
+
+github.com/hashicorp/go-plugin.HandshakeConfig:
+	ProtocolVersion 1
+	MagicCookieKey "SMART_PLUGIN"
+	MagicCookieValue "sbuilder"
