@@ -1,8 +1,8 @@
 package golang
 
 import (
-	"github.com/sapplications/sgo/src/app"
-	helper "github.com/sapplications/sgo/src/helper/hashicorp/hclog"
+	"github.com/sapplications/sgo/app"
+	helper "github.com/sapplications/sgo/helper/hashicorp/hclog"
 	"gopkg.in/check.v1"
 )
 

@@ -1,4 +1,4 @@
-package plugins // import "github.com/sapplications/sgo/src/plugins"
+package plugins // import "github.com/sapplications/sgo/plugins"
 
 Package plugins implements common objects for supporting plugins.
 

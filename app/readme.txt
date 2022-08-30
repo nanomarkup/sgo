@@ -1,4 +1,4 @@
-package app // import "github.com/sapplications/sgo/src/app"
+package app // import "github.com/sapplications/sgo/app"
 
 Package app generates Go sources of an application.
 

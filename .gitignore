@@ -16,5 +16,4 @@
 .vscode
 *.log
 
-/src/sgo/
 test/
