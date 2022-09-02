@@ -10,6 +10,9 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func (g *Coder) Init(items map[string]map[string]string) {
@@ -37,7 +40,7 @@ func (g *Coder) Clean(application string) error {
 	}
 	// get current application if it is missing
 	if application == "" {
-		return fmt.Errorf("The application is not specified")
+		return fmt.Errorf(AppIsNotSpecified)
 	}
 	if apps, err := readItem(appsItemName, g.items); err == nil {
 		if _, found := apps[application]; found {
@@ -75,7 +78,7 @@ func (g *Coder) entryPoint(application string) (string, error) {
 	}
 	// check the applicatin is exist
 	if _, found := apps[application]; !found {
-		return "", fmt.Errorf("The selected \"%s\" application does not found", application)
+		return "", fmt.Errorf(AppIsMissingF, application)
 	}
 	// read app details
 	info, err := readItem(application, g.items)
@@ -85,7 +88,7 @@ func (g *Coder) entryPoint(application string) (string, error) {
 	// get entry point
 	entry, found := info[entryAttrName]
 	if !found {
-		return "", fmt.Errorf("The \"%s\" attribute is not exist for the \"%s\" application", entryAttrName, application)
+		return "", fmt.Errorf(AppAttrIsMissingF, entryAttrName, application)
 	}
 	return entry, nil
 }
@@ -145,7 +148,7 @@ func (g *Coder) generateDepsFile(application, entryPoint string) error {
 
 	writer := bufio.NewWriter(file)
 	defer writer.Flush()
-	writer.WriteString(fmt.Sprintf("package main\n\n"))
+	writer.WriteString("package main\n\n")
 	// write the import section
 	if len(imports) > 0 {
 		writer.WriteString("import (\n")
@@ -165,10 +168,10 @@ func (g *Coder) generateDepsFile(application, entryPoint string) error {
 		case itemKind.Func:
 			writer.WriteString(fmt.Sprintf("\t%s.%s\n", entry.pkg, entry.name))
 		case itemKind.Struct:
-			funcName := fmt.Sprintf("\tapp := Use%s%s()\n", strings.Title(entry.pkg), entry.name)
+			funcName := fmt.Sprintf("\tapp := %s%s%s()\n", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(entry.pkg), entry.name)
 			funcName = strings.ReplaceAll(funcName, "-", "_")
 			writer.WriteString(funcName)
-			writer.WriteString(fmt.Sprintf("\tapp.Execute()\n"))
+			writer.WriteString("\tapp.Execute()\n")
 		case itemKind.String:
 			writer.WriteString(fmt.Sprintf("\tfmt.Println(%s)\n", entry.original))
 		}
@@ -177,7 +180,7 @@ func (g *Coder) generateDepsFile(application, entryPoint string) error {
 	// write items
 	if len(code) > 0 {
 		for _, v := range code {
-			writer.WriteString(fmt.Sprintf("%s", v))
+			writer.WriteString(v)
 		}
 	}
 	return nil
@@ -209,14 +212,14 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 			case itemKind.Func:
 				appendImport(imports, it.path+it.pkg)
 			case itemKind.Struct:
-				funcName = fmt.Sprintf("Use%s%s", strings.Title(it.pkg), it.name)
+				funcName = fmt.Sprintf("%s%s%s", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(it.pkg), it.name)
 				funcName = strings.ReplaceAll(funcName, "-", "_")
 				fullNameDefine = it.name
 				fullNameReturn = it.name
 				if len(it.path) > 0 {
 					if it.path[0] == '*' {
 						alias = string(appendImport(imports, it.path[1:]+it.pkg))
-						funcName = funcName + "Ref"
+						funcName = funcName + GenRefSufix
 						fullNameDefine = fmt.Sprintf("*%s.%s", alias, it.name)
 						fullNameReturn = fmt.Sprintf("&%s.%s", alias, it.name)
 					} else {
@@ -258,10 +261,10 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 										case itemKind.Func:
 											parameter = d.name
 										case itemKind.Struct:
-											funcName = fmt.Sprintf("Use%s%s", strings.Title(d.pkg), d.name)
+											funcName = fmt.Sprintf("%s%s%s", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(d.pkg), d.name)
 											funcName = strings.ReplaceAll(funcName, "-", "_")
 											if len(d.path) > 0 && d.path[0] == '*' {
-												funcName = funcName + "Ref"
+												funcName = funcName + GenRefSufix
 											}
 											parameter = funcName + "()"
 										case itemKind.String, itemKind.Number:
@@ -269,7 +272,7 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 										default:
 											g.Logger.Error(fmt.Sprintf("\"%s\" type of parameter does not supported:", d.original))
 											g.Logger.Error(fmt.Sprintf("\tkind=%d", d.kind))
-											return nil, nil, fmt.Errorf("\"%s\" type of parameter does not supported", d.original)
+											return nil, nil, fmt.Errorf(TypeDoesNotSupportedF, d.original)
 										}
 
 										if i == 0 {
@@ -282,7 +285,7 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 								name = name + ")"
 								code = append(code, fmt.Sprintf("\tv.%s = %s.%s\n", k, alias, name))
 							default:
-								return nil, nil, fmt.Errorf("\"%s\" type does not supported", v.original)
+								return nil, nil, fmt.Errorf(TypeDoesNotSupportedF, v.original)
 							}
 						case itemKind.Struct:
 							typeId1 = it.original
@@ -299,10 +302,10 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 							}
 							ref = len(v.path) > 0 && v.path[0] == '*'
 							if supported {
-								funcName = fmt.Sprintf("Use%s%s", strings.Title(v.pkg), v.name)
+								funcName = fmt.Sprintf("%s%s%s", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(v.pkg), v.name)
 								funcName = strings.ReplaceAll(funcName, "-", "_")
 								if ref {
-									funcName = funcName + "Ref"
+									funcName = funcName + GenRefSufix
 								}
 								code = append(code, fmt.Sprintf("\tv.%s = %s()\n", k, funcName))
 							} else {
@@ -316,7 +319,7 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 							code = append(code, fmt.Sprintf("\tv.%s = %s\n", k, v.original))
 						}
 					}
-					code = append(code, fmt.Sprintf("\treturn v\n"))
+					code = append(code, "\treturn v\n")
 				}
 				code = append(code, "}\n\n")
 			}
@@ -356,25 +359,25 @@ func (g *Coder) getFieldInfo(types []typeInfo, item string, field string) (*fiel
 	item = strings.TrimPrefix(item, "*")
 	info := getType(types, item)
 	if info == nil {
-		return nil, fmt.Errorf("\"%s\" type does not found", item)
+		return nil, fmt.Errorf(TypeIsMissingF, item)
 	}
 	for _, v := range info.Fields {
 		if v.FieldName == field {
 			return &v, nil
 		}
 	}
-	return nil, fmt.Errorf("\"%s\" field is missing in \"%s\" type", field, item)
+	return nil, fmt.Errorf(FieldIsMissingF, field, item)
 }
 
 func (g *Coder) areTypesCompatible(types []typeInfo, typeA string, fieldA string, typeB string) (bool, error) {
 	// get input types
 	infoA := getType(types, typeA)
 	if infoA == nil {
-		return false, fmt.Errorf("\"%s\" type does not found", typeA)
+		return false, fmt.Errorf(TypeIsMissingF, typeA)
 	}
 	infoB := getType(types, typeB)
 	if infoB == nil {
-		return false, fmt.Errorf("\"%s\" type does not found", typeB)
+		return false, fmt.Errorf(TypeIsMissingF, typeB)
 	}
 	fieldId := ""
 	var fieldOrigInfo field
@@ -386,7 +389,7 @@ func (g *Coder) areTypesCompatible(types []typeInfo, typeA string, fieldA string
 		}
 	}
 	if fieldId == "" {
-		return false, fmt.Errorf("\"%s\" field of \"%s\" type does not exist", fieldA, typeA)
+		return false, fmt.Errorf(FieldIsMissingF, fieldA, typeA)
 	}
 	fieldInfo := getType(types, fieldId)
 	if fieldInfo == nil {
@@ -394,7 +397,7 @@ func (g *Coder) areTypesCompatible(types []typeInfo, typeA string, fieldA string
 			// it is type of interface{}
 			return true, nil
 		} else {
-			return false, fmt.Errorf("\"%s\" type does not found Coder fieldId", fieldId)
+			return false, fmt.Errorf(TypeIsMissingFieldIdF, fieldId)
 		}
 	}
 	// check compatibility of input types
@@ -402,7 +405,7 @@ func (g *Coder) areTypesCompatible(types []typeInfo, typeA string, fieldA string
 		return true, nil
 	}
 	if fieldInfo.Kind != reflect.Interface {
-		return false, fmt.Errorf("The receiver of \"%s\" type should be type of interface", fieldInfo.Id)
+		return false, fmt.Errorf(TypeIsNotInterface, fieldInfo.Id)
 	}
 	// check methods
 	var fA field
@@ -427,7 +430,7 @@ func (g *Coder) areTypesCompatible(types []typeInfo, typeA string, fieldA string
 					iB++
 				}
 				if (countA - iA) != (countB - iB) {
-					return false, fmt.Errorf("The number of input parameters are different for \"%s\" method of \"%s\" type and \"%s\" type", fieldA, typeA, typeB)
+					return false, fmt.Errorf(WrongNumberOfInputParamsF, fieldA, typeA, typeB)
 				}
 				for i := iA; i < countA; i++ {
 					fA = v.In[i]
@@ -439,7 +442,7 @@ func (g *Coder) areTypesCompatible(types []typeInfo, typeA string, fieldA string
 				}
 				// check output parameters
 				if len(x.Out) != len(v.Out) {
-					return false, fmt.Errorf("The number of output parameters are different for \"%s\" method of \"%s\" type and \"%s\" type", fieldA, typeA, typeB)
+					return false, fmt.Errorf(WrongNumberOfOutputParamsF, fieldA, typeA, typeB)
 				}
 				for i, p := range x.Out {
 					fA = v.Out[i]
@@ -452,7 +455,7 @@ func (g *Coder) areTypesCompatible(types []typeInfo, typeA string, fieldA string
 			}
 		}
 		if !found {
-			return false, fmt.Errorf("The \"%s\" method is missing in \"%s\"", v.Name, infoB.Id)
+			return false, fmt.Errorf(MethodIsMissingF, v.Name, infoB.Id)
 		}
 	}
 	return true, nil

@@ -202,7 +202,7 @@ func getTypeInfo(list []typeInfo) ([]typeInfo, error) {
 			return info, nil
 		}
 	}
-	return nil, errors.New("cannot collect type details")
+	return nil, errors.New(ErrorOnGettingTypeDetails)
 }
 
 func isDirEmpty(path string) (bool, error) {
@@ -279,7 +279,7 @@ func readItem(name string, items map[string]map[string]string) (map[string]strin
 	if apps, found := items[name]; found {
 		return apps, nil
 	}
-	return nil, fmt.Errorf("The %s item is not found", name)
+	return nil, fmt.Errorf(ItemIsMissingF, name)
 }
 
 func appendImport(list imports, path string) alias {
@@ -298,7 +298,7 @@ func appendImport(list imports, path string) alias {
 
 func checkApplication(application string) error {
 	if application == "" {
-		return fmt.Errorf("The application is not specified")
+		return fmt.Errorf(AppIsNotSpecified)
 	}
 	return nil
 }

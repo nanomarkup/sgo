@@ -22,7 +22,7 @@ func (b *Builder) Build(application string) error {
 	folderPath := filepath.Join(wd, application)
 	filePath := filepath.Join(folderPath, depsFileName)
 	if _, err := os.Stat(filePath); err != nil {
-		return fmt.Errorf("\"%s\" does not exist. Please use a \"generate\" command to create it.", filePath)
+		return fmt.Errorf(BuilderFileDoesNotExistF, filePath)
 	}
 	g := Coder{
 		b.Logger,

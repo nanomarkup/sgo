@@ -8,16 +8,19 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB string, ref bool) (string, error) {
 	infoA := getType(types, typeA)
 	if infoA == nil {
-		return "", fmt.Errorf("\"%s\" type does not found", typeA)
+		return "", fmt.Errorf(TypeIsMissingF, typeA)
 	}
 	infoB := getType(types, typeB)
 	if infoB == nil {
-		return "", fmt.Errorf("\"%s\" type does not found", typeB)
+		return "", fmt.Errorf(TypeIsMissingF, typeB)
 	}
 	fieldId := ""
 	for _, v := range infoA.Fields {
@@ -27,19 +30,19 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 		}
 	}
 	if fieldId == "" {
-		return "", fmt.Errorf("\"%s\" field of \"%s\" type does not exist", fieldA, typeA)
+		return "", fmt.Errorf(FieldIsMissingF, fieldA, typeA)
 	}
 	fieldInfo := getType(types, fieldId)
 	if fieldInfo == nil {
-		return "", fmt.Errorf("\"%s\" type does not found", fieldId)
+		return "", fmt.Errorf(TypeIsMissingF, fieldId)
 	}
 	// create a new struct
-	nameA := fmt.Sprintf("%s%s", strings.Title(filepath.Base(fieldInfo.PkgPath)), fieldInfo.Name)
-	nameB := fmt.Sprintf("%s%s", strings.Title(filepath.Base(infoB.PkgPath)), infoB.Name)
-	name := fmt.Sprintf("%s%sAdapter", nameB, nameA)
-	funcName := "Use" + name
+	nameA := fmt.Sprintf("%s%s", cases.Title(language.English, cases.NoLower).String(filepath.Base(fieldInfo.PkgPath)), fieldInfo.Name)
+	nameB := fmt.Sprintf("%s%s", cases.Title(language.English, cases.NoLower).String(filepath.Base(infoB.PkgPath)), infoB.Name)
+	name := fmt.Sprintf("%s%s%s", nameB, nameA, GenAdapterSufix)
+	funcName := GenNamePrefix + name
 	if ref {
-		funcName = funcName + "Ref"
+		funcName = funcName + GenRefSufix
 	}
 	// if the adapter exists then return it
 	if o.code != nil && o.code[name] != nil {
@@ -77,7 +80,7 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 					iB++
 				}
 				if (countA - iA) != (countB - iB) {
-					return "", fmt.Errorf("The number of input parameters are different for \"%s\" method of \"%s\" type and \"%s\" type", fieldA, typeA, typeB)
+					return "", fmt.Errorf(WrongNumberOfInputParamsF, fieldA, typeA, typeB)
 				}
 				incompatible = false
 				for i := iA; i < countA; i++ {
@@ -91,7 +94,7 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 				}
 				// check output parameters
 				if len(x.Out) != len(v.Out) {
-					return "", fmt.Errorf("The number of output parameters are different for \"%s\" method of \"%s\" type and \"%s\" type", fieldA, typeA, typeB)
+					return "", fmt.Errorf(WrongNumberOfOutputParamsF, fieldA, typeA, typeB)
 				}
 				for i, p := range x.Out {
 					fA = v.Out[i]
@@ -123,7 +126,7 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 					iP = 1
 					code = append(code, strings.Join(fields, ", ")+")")
 					fields = []string{}
-					for i, _ := range v.Out {
+					for i := range v.Out {
 						fA = v.Out[i]
 						alias = string(appendImport(*o.imports, fA.PkgPath))
 						field = fmt.Sprintf("%s.%s", alias, fA.TypeName)
@@ -148,7 +151,7 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 			}
 		}
 		if !found {
-			return "", fmt.Errorf("The \"%s\" method is missing in \"%s\"", v.Name, infoB.Id)
+			return "", fmt.Errorf(MethodIsMissingF, v.Name, infoB.Id)
 		}
 	}
 	// generate the "Use" function
@@ -159,7 +162,7 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 		code = append(code, fmt.Sprintf("func %s() %s {\n", funcName, name))
 		code = append(code, fmt.Sprintf("\tv := %s{}\n", name))
 	}
-	code = append(code, fmt.Sprintf("\tv.%s = *Use%sRef()\n", infoB.Name, nameB))
+	code = append(code, fmt.Sprintf("\tv.%s = *%s%s%s()\n", infoB.Name, GenNamePrefix, nameB, GenRefSufix))
 	code = append(code, "\treturn v\n")
 	code = append(code, "}\n\n")
 	// keep a new code
@@ -191,7 +194,7 @@ func (o *adapter) resolveMethod(obj string, m1 method, m2 method) ([]string, err
 		iB++
 	}
 	if (countA - iA) != (countB - iB) {
-		return nil, fmt.Errorf("The number of input parameters are different for \"%s\" and \"%s\" methods", m1.Name, m2.Name)
+		return nil, fmt.Errorf(WrongNumberOfInputParamsForMethodsF, m1.Name, m2.Name)
 	}
 	// process input parameters
 	iP := 1
@@ -211,7 +214,7 @@ func (o *adapter) resolveMethod(obj string, m1 method, m2 method) ([]string, err
 	method := fmt.Sprintf("o.%s.%s(%s)", obj, m1.Name, strings.Join(inputs, ", "))
 	// process output parameters
 	if len(m2.Out) != len(m1.Out) {
-		return nil, fmt.Errorf("The number of output parameters are different for \"%s\" and \"%s\" methods", m1.Name, m2.Name)
+		return nil, fmt.Errorf(WrongNumberOfOutputParamsForMethodsF, m1.Name, m2.Name)
 	}
 	if len(m1.Out) == 0 && len(m2.Out) == 0 {
 		inCode = append(inCode, fmt.Sprintf("\t%s\n", method))
@@ -264,5 +267,5 @@ func (o *adapter) resolveParameter(in bool, name1 string, f1 field, name2 string
 			return name1, []string{fmt.Sprintf("\t%s = %s.(%s.%s)\n", name2, name1, alias, f2.FieldName)}, nil
 		}
 	}
-	return "", nil, fmt.Errorf("Cannot resolve \"%s\" and \"%s\" parameters", f1.TypeName, f2.TypeName)
+	return "", nil, fmt.Errorf(ParamsDoesNotSupportedF, f1.TypeName, f2.TypeName)
 }
