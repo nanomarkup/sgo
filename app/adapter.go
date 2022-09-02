@@ -178,7 +178,6 @@ func (o *adapter) resolveMethod(obj string, m1 method, m2 method) ([]string, err
 	iB := 0
 	countA := len(m1.In)
 	countB := len(m2.In)
-	code := []string{}
 	inCode := []string{}
 	outCode := []string{}
 	inputs := []string{}
@@ -186,7 +185,6 @@ func (o *adapter) resolveMethod(obj string, m1 method, m2 method) ([]string, err
 	var fA field
 	var fB field
 	var name string
-	var err error
 	if countA > 0 && m1.In[0].Id == "." && m1.In[0].Kind == reflect.Ptr {
 		iA++
 	}
@@ -202,7 +200,7 @@ func (o *adapter) resolveMethod(obj string, m1 method, m2 method) ([]string, err
 		fA = m1.In[i]
 		fB = m2.In[iB]
 		name = "a" + strconv.Itoa(iP)
-		name, code, err = o.resolveParameter(true, name, fB, "b"+strconv.Itoa(iP), fA)
+		name, code, err := o.resolveParameter(true, name, fB, "b"+strconv.Itoa(iP), fA)
 		if err != nil {
 			return nil, err
 		}
@@ -225,7 +223,7 @@ func (o *adapter) resolveMethod(obj string, m1 method, m2 method) ([]string, err
 		for i, p := range m2.Out {
 			fA = m1.Out[i]
 			name = "v" + strconv.Itoa(iP)
-			name, code, err = o.resolveParameter(false, name, fA, "r"+strconv.Itoa(iP), p)
+			name, code, err := o.resolveParameter(false, name, fA, "r"+strconv.Itoa(iP), p)
 			if err != nil {
 				return nil, err
 			}

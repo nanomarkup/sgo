@@ -27,6 +27,9 @@ task cbuild code, build
 # Synopsis: Remove generated files
 task clean {
     $Status = Start-Process -FilePath 'sb' -ArgumentList 'clean' -NoNewWindow -PassThru -Wait 
+    if (Test-Path -Path '.\app\test') {
+        Remove-Item -Path '.\app\test' -Recurse
+    }
     Assert($Status.ExitCode -eq 0) 'The "clean" command failed'
 }
 
