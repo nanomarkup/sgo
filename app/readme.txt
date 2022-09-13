@@ -34,14 +34,11 @@ TYPES
 
 type Builder struct {
 	Logger Logger
-	// Has unexported fields.
 }
 
 func (b *Builder) Build(application string) error
 
 func (b *Builder) Clean(application string) error
-
-func (b *Builder) Init(items map[string]map[string]string)
 
 func (b *Builder) SetLogger(logger Logger)
 

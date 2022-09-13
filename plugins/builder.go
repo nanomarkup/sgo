@@ -11,10 +11,9 @@ import (
 
 // client's methods
 
-func (c *builderClient) Build(app string, sources *map[string]map[string]string) error {
+func (c *builderClient) Build(app string) error {
 	return c.client.Call("Plugin.Build", map[string]interface{}{
-		"app":     app,
-		"sources": sources,
+		"app": app,
 	}, new(interface{}))
 }
 
@@ -35,7 +34,7 @@ func (c *builderClient) Generate(app string, sources *map[string]map[string]stri
 // server's methods
 
 func (s *builderServer) Build(args map[string]interface{}, resp *interface{}) error {
-	return s.Impl.Build(args["app"].(string), args["sources"].(*map[string]map[string]string))
+	return s.Impl.Build(args["app"].(string))
 }
 
 func (s *builderServer) Clean(args map[string]interface{}, resp *interface{}) error {

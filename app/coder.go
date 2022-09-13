@@ -5,6 +5,7 @@ package app
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -24,13 +25,30 @@ func (g *Coder) Generate(application string) error {
 	if err := checkApplication(application); err != nil {
 		return err
 	}
-	// generate a Go file and save all dependencies
 	entry, err := g.entryPoint(application)
 	if err != nil {
 		return err
-	} else {
-		return g.generateDepsFile(application, entry)
 	}
+	// create a temporary folder as wd
+	wd, err := ioutil.TempDir("", "sc*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(wd)
+	// generate a file with all dependencies
+	err = g.generateDepsFile(application, entry, wd)
+	if err != nil {
+		return err
+	}
+	// generate an app file if it is missing
+	pd, _ := os.Getwd()
+	filePath := filepath.Join(pd, application, appFileName)
+	if _, err := os.Stat(filePath); err != nil && os.IsNotExist(err) {
+		if err := g.generateAppFile(application); err != nil {
+			return err
+		}
+	}
+	return err
 }
 
 func (g *Coder) Clean(application string) error {
@@ -115,14 +133,14 @@ func (g *Coder) generateAppFile(application string) error {
 	return nil
 }
 
-func (g *Coder) generateDepsFile(application, entryPoint string) error {
+func (g *Coder) generateDepsFile(application, entryPoint, wd string) error {
 	// check and get info about all dependencies
 	r := resolver{
 		application,
 		entryPoint,
 		g.items,
 	}
-	list, types, err := r.resolve()
+	list, types, err := r.resolve(wd)
 	if err != nil {
 		return err
 	}
@@ -135,8 +153,8 @@ func (g *Coder) generateDepsFile(application, entryPoint string) error {
 		imports["fmt"] = ""
 	}
 	// save dependencies to a file
-	wd, _ := os.Getwd()
-	root := filepath.Join(wd, application)
+	pd, _ := os.Getwd()
+	root := filepath.Join(pd, application)
 	if _, err := os.Stat(root); os.IsNotExist(err) {
 		os.Mkdir(root, os.ModePerm)
 	}

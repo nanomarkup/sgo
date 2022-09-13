@@ -10,7 +10,6 @@ type Coder struct {
 
 type Builder struct {
 	Logger Logger
-	items  map[string]map[string]string
 }
 
 type Logger interface {

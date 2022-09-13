@@ -102,7 +102,7 @@ func getType(types []typeInfo, id string) *typeInfo {
 	return nil
 }
 
-func getTypeInfo(list []typeInfo) ([]typeInfo, error) {
+func getTypeInfo(wd string, list []typeInfo) ([]typeInfo, error) {
 	// process all items
 	main := []string{}
 	imports := map[string]string{}
@@ -156,14 +156,8 @@ func getTypeInfo(list []typeInfo) ([]typeInfo, error) {
 	unit = append(unit, `	serialize(data)
 }
 `)
-	// create a temporary folder
-	dir, err := ioutil.TempDir("", "sb*")
-	if err != nil {
-		return nil, err
-	}
-	defer os.RemoveAll(dir)
-	// add other functions
-	typesPath := filepath.Join(dir, "types")
+
+	typesPath := filepath.Join(wd, "types")
 	if len(main) > 0 {
 		unit = append(unit, genSerializeFunc(typesPath))
 		defer func() {
@@ -171,7 +165,7 @@ func getTypeInfo(list []typeInfo) ([]typeInfo, error) {
 		}()
 	}
 	// generate a main unit and run it
-	fp := filepath.Join(dir, "main.go")
+	fp := filepath.Join(wd, "main.go")
 	file, err := os.Create(fp)
 	if err != nil {
 		return nil, err
@@ -185,6 +179,9 @@ func getTypeInfo(list []typeInfo) ([]typeInfo, error) {
 	writer.WriteString(strings.Join(unit, "\n"))
 	writer.Flush()
 	// serialize items
+	if _, err = goMod(wd, "unknown"); err != nil {
+		return nil, err
+	}
 	if _, err = goRun(fp); err != nil {
 		return nil, err
 	}
@@ -233,6 +230,37 @@ func isDebugging() bool {
 		pid = p.PPid()
 	}
 	return false
+}
+
+func goMod(wd string, name string) ([]byte, error) {
+	// if the module mode is disabled then exit
+	if strings.ToLower(os.Getenv("GO111MODULE")) == "off" {
+		return nil, nil
+	}
+	args := []string{}
+	filePath := filepath.Join(wd, "go.mod")
+	// create a module file if it is missing
+	_, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		args = append(args, "mod", "init", name)
+		cmd := exec.Command("go", args...)
+		cmd.Dir = wd
+		out, err := cmd.Output()
+		if e, ok := err.(*exec.ExitError); ok {
+			return out, fmt.Errorf("%s", e.Stderr)
+		}
+	} else if err != nil {
+		return nil, err
+	}
+	// update requirements
+	args = []string{"mod", "tidy"}
+	cmd := exec.Command("go", args...)
+	cmd.Dir = wd
+	out, err := cmd.Output()
+	if e, ok := err.(*exec.ExitError); ok {
+		return out, fmt.Errorf("%s", e.Stderr)
+	}
+	return out, err
 }
 
 func goRun(src string) ([]byte, error) {

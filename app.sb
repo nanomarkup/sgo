@@ -21,7 +21,7 @@ sgo:
 	Coder *{src}/app.Coder
 	Builder *{src}/app.Builder
 	Handshake github.com/hashicorp/go-plugin.HandshakeConfig
-	Logger {src}/helper/hashicorp/hclog.NewFileOut("sgo", {logInfo})
+	Logger {src}/helper/hashicorp/hclog.NewFileOut("sgo", {logTrace})
 
 github.com/hashicorp/go-plugin.HandshakeConfig:
 	ProtocolVersion 1

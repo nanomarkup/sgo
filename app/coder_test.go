@@ -1,28 +1,30 @@
 package app
 
 import (
-	helper "github.com/sapplications/sgo/helper/hashicorp/hclog"
+	"fmt"
+	"testing"
+
 	"gopkg.in/check.v1"
 )
 
 func (s *sgoSuite) TestCodeNumbers(c *check.C) {
-	g := Coder{
-		Logger: helper.NewStdOut("sgo", helper.LogLever.Debug),
-	}
+	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = map[string]string{
 		"Int1":   "5",
 		"Float1": "5.02",
 	}
-	g.Init(items)
-	err := g.Generate("test")
-	c.Assert(err, check.IsNil)
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
 }
 
 func (s *sgoSuite) TestCodeParameters(c *check.C) {
-	g := Coder{
-		Logger: helper.NewStdOut("sgo", helper.LogLever.Debug),
-	}
+	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = map[string]string{
 		"Field1V2": "github.com/sapplications/sgo/test.NewField1V2(\"Ariana\", \"Noha\")",
@@ -30,47 +32,57 @@ func (s *sgoSuite) TestCodeParameters(c *check.C) {
 		"Field3":   "github.com/sapplications/sgo/test.NewField3(github.com/sapplications/sgo/test.Field1)",
 		"Logger":   "github.com/sapplications/sgo/helper/hashicorp/hclog.NewFileOut(\"sgo\", 3)",
 	}
-	g.Init(items)
-	err := g.Generate("test")
-	c.Assert(err, check.IsNil)
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
 }
 
 func (s *sgoSuite) TestCodeRefs(c *check.C) {
-	g := Coder{
-		Logger: helper.NewStdOut("sgo", helper.LogLever.Debug),
-	}
+	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = map[string]string{
 		"Runner": "*github.com/sapplications/sgo/test.RunnerImpl",
 	}
-	g.Init(items)
-	err := g.Generate("test")
-	c.Assert(err, check.IsNil)
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
 }
 
 func (s *sgoSuite) TestCodeFuncs(c *check.C) {
-	g := Coder{
-		Logger: helper.NewStdOut("sgo", helper.LogLever.Debug),
-	}
+	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = map[string]string{
 		"Hello":     "github.com/sapplications/sgo/test.Hello()",
 		"EmptyFunc": "github.com/sapplications/sgo/test.EmptyFunc()",
 	}
-	g.Init(items)
-	err := g.Generate("test")
-	c.Assert(err, check.IsNil)
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
 }
 
 func (s *sgoSuite) TestCodeCreators(c *check.C) {
-	g := Coder{
-		Logger: helper.NewStdOut("sgo", helper.LogLever.Debug),
-	}
+	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = map[string]string{
 		"Field1": "github.com/sapplications/sgo/test.NewField1()",
 	}
-	g.Init(items)
-	err := g.Generate("test")
-	c.Assert(err, check.IsNil)
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
 }

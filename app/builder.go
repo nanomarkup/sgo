@@ -8,39 +8,38 @@ import (
 	"path/filepath"
 )
 
-func (b *Builder) Init(items map[string]map[string]string) {
-	b.items = items
-}
-
 func (b *Builder) Build(application string) error {
 	b.Logger.Info(fmt.Sprintf("building \"%s\" application", application))
 	if err := checkApplication(application); err != nil {
 		return err
 	}
-	// check the Go file with all dependencies is exist
+	// check generated files exists
 	wd, _ := os.Getwd()
 	folderPath := filepath.Join(wd, application)
 	filePath := filepath.Join(folderPath, depsFileName)
 	if _, err := os.Stat(filePath); err != nil {
-		return fmt.Errorf(BuilderFileDoesNotExistF, filePath)
+		if os.IsNotExist(err) {
+			return fmt.Errorf(BuilderFileDoesNotExistF, filePath)
+		} else {
+			return err
+		}
 	}
-	g := Coder{
-		b.Logger,
-		b.items,
-	}
-	// generate a Go app file if it is missing
 	filePath = filepath.Join(folderPath, appFileName)
 	if _, err := os.Stat(filePath); err != nil {
 		if os.IsNotExist(err) {
-			if err := g.generateAppFile(application); err != nil {
-				return err
-			}
+			return fmt.Errorf(BuilderFileDoesNotExistF, filePath)
 		} else {
 			return err
 		}
 	}
 	// build the application
 	filePath = filepath.Join(folderPath, application+".exe")
+	os.Chdir(folderPath)
+	defer os.Chdir(wd)
+
+	if _, err := goMod(folderPath, application); err != nil {
+		return err
+	}
 	return goBuild(folderPath, filePath)
 }
 

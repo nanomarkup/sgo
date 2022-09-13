@@ -2,8 +2,7 @@
 
 package sgo
 
-func (b *builder) Build(app string, sources *map[string]map[string]string) error {
-	b.builder.Init(*sources)
+func (b *builder) Build(app string) error {
 	if err := b.builder.Build(app); err != nil {
 		return err
 	}
@@ -12,7 +11,6 @@ func (b *builder) Build(app string, sources *map[string]map[string]string) error
 
 func (b *builder) Clean(app string, sources *map[string]map[string]string) error {
 	// remove the built files
-	b.builder.Init(*sources)
 	if err := b.builder.Clean(app); err != nil {
 		return err
 	}

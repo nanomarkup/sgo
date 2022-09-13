@@ -24,7 +24,6 @@ type Coder interface {
 }
 
 type Builder interface {
-	Init(items map[string]map[string]string)
 	Build(appName string) error
 	Clean(appName string) error
 	SetLogger(logger Logger)

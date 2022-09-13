@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (r *resolver) resolve() (items, []typeInfo, error) {
+func (r *resolver) resolve(wd string) (items, []typeInfo, error) {
 	id := ""
 	kind := reflect.Interface
 	list := r.getItems()
@@ -41,7 +41,7 @@ func (r *resolver) resolve() (items, []typeInfo, error) {
 		return list, all, nil
 	}
 	for {
-		curr, err := getTypeInfo(input)
+		curr, err := getTypeInfo(wd, input)
 		if err != nil {
 			return nil, nil, err
 		}
