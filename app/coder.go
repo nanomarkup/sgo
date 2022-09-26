@@ -5,12 +5,12 @@ package app
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
+	"syscall"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -29,9 +29,23 @@ func (g *Coder) Generate(application string) error {
 	if err != nil {
 		return err
 	}
-	// create a temporary folder as wd
-	wd, err := ioutil.TempDir("", "sc*")
+	// create a hidden folder as wd
+	wd, err := os.Getwd()
 	if err != nil {
+		return err
+	}
+	wd = filepath.Join(wd, application, workingFolderName)
+	if _, err = os.Stat(wd); err == nil {
+		os.RemoveAll(wd)
+	}
+	if err = os.MkdirAll(wd, os.ModePerm); err != nil {
+		return err
+	}
+	pWd, err := syscall.UTF16PtrFromString(wd)
+	if err != nil {
+		return err
+	}
+	if err = syscall.SetFileAttributes(pWd, syscall.FILE_ATTRIBUTE_HIDDEN); err != nil {
 		return err
 	}
 	defer os.RemoveAll(wd)

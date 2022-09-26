@@ -29,6 +29,10 @@ const (
 	appsItemName string = "apps"
 	// entryAttrName constant returns an entry attribute name of the application
 	entryAttrName string = "entry"
+	// temporary working folder name
+	workingFolderName string = ".sgo"
+	// Go module file name
+	moduleFileName = "go.mod"
 )
 
 type adapter struct {
@@ -179,8 +183,14 @@ func getTypeInfo(wd string, list []typeInfo) ([]typeInfo, error) {
 	writer.WriteString(strings.Join(unit, "\n"))
 	writer.Flush()
 	// serialize items
-	if _, err = goMod(wd, "unknown"); err != nil {
+	exists, err := isModExist()
+	if err != nil {
 		return nil, err
+	}
+	if !exists {
+		if _, err = goMod(wd, "unknown"); err != nil {
+			return nil, err
+		}
 	}
 	if _, err = goRun(fp); err != nil {
 		return nil, err
@@ -214,6 +224,34 @@ func isDirEmpty(path string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func isModExist() (bool, error) {
+	var checkMod func(folderPath string) (bool, error)
+	checkMod = func(folderPath string) (bool, error) {
+		filePath := filepath.Join(folderPath, moduleFileName)
+		_, err := os.Stat(filePath)
+		if err == nil {
+			return true, nil
+		} else if os.IsNotExist(err) {
+			sep := string(filepath.Separator)
+			paths := strings.Split(folderPath, sep)
+			lpaths := len(paths)
+			if lpaths < 2 {
+				return false, nil
+			}
+			path := strings.Join(paths[:lpaths-1], sep)
+			return checkMod(path)
+		} else {
+			return false, err
+		}
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return false, err
+	}
+	return checkMod(wd)
 }
 
 func isDebugging() bool {

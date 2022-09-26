@@ -37,8 +37,14 @@ func (b *Builder) Build(application string) error {
 	os.Chdir(folderPath)
 	defer os.Chdir(wd)
 
-	if _, err := goMod(folderPath, application); err != nil {
+	exists, err := isModExist()
+	if err != nil {
 		return err
+	}
+	if !exists {
+		if _, err := goMod(folderPath, application); err != nil {
+			return err
+		}
 	}
 	return goBuild(folderPath, filePath)
 }
