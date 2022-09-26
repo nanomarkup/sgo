@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/mitchellh/go-ps"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -183,14 +182,12 @@ func getTypeInfo(wd string, list []typeInfo) ([]typeInfo, error) {
 	writer.WriteString(strings.Join(unit, "\n"))
 	writer.Flush()
 	// serialize items
-	exists, err := isModExist()
-	if err != nil {
+	curr, _ := os.Getwd()
+	os.Chdir(wd)
+	defer os.Chdir(curr)
+
+	if _, err = goMod(wd, "unknown"); err != nil {
 		return nil, err
-	}
-	if !exists {
-		if _, err = goMod(wd, "unknown"); err != nil {
-			return nil, err
-		}
 	}
 	if _, err = goRun(fp); err != nil {
 		return nil, err
@@ -276,10 +273,17 @@ func goMod(wd string, name string) ([]byte, error) {
 		return nil, nil
 	}
 	args := []string{}
-	filePath := filepath.Join(wd, "go.mod")
+	filePath := filepath.Join(wd, moduleFileName)
 	// create a module file if it is missing
 	_, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
+		modExists, err := isModExist()
+		if err != nil {
+			return nil, err
+		}
+		if modExists {
+			return nil, nil
+		}
 		args = append(args, "mod", "init", name)
 		cmd := exec.Command("go", args...)
 		cmd.Dir = wd
@@ -307,12 +311,6 @@ func goRun(src string) ([]byte, error) {
 	if isDebugging() {
 		// resolve the debugging sb application
 		cmd.Dir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	} else {
-		// resolve the testing sb application
-		wd := viper.GetString("GOWD")
-		if wd != "" {
-			cmd.Dir = wd
-		}
 	}
 	out, err := cmd.Output()
 	if e, ok := err.(*exec.ExitError); ok {

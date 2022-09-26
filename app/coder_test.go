@@ -2,8 +2,11 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
+	"github.com/hashicorp/go-hclog"
+	"github.com/sapplications/smod/lod"
 	"gopkg.in/check.v1"
 )
 
@@ -85,4 +88,27 @@ func (s *sgoSuite) TestCodeCreators(c *check.C) {
 			t.Error(err)
 		}
 	}), check.Equals, true)
+}
+
+func (s *sgoSuite) TestCodeSgoUsingGoModules(c *check.C) {
+	m := lod.Manager{}
+	m.SetLogger(hclog.New(&hclog.LoggerOptions{
+		Name:   "test",
+		Level:  hclog.Trace,
+		Output: os.Stdout,
+	}))
+	wd, _ := os.Getwd()
+	defer os.Chdir(wd)
+	os.Chdir(".\\..")
+	r, e := m.ReadAll("sb")
+	if e != nil {
+		fmt.Println(e.Error())
+		c.Error()
+		return
+	}
+	c.Assert(r, check.NotNil)
+	// create a temporary folder and use it as working folder for generating an application
+	os.Chdir(c.MkDir())
+	s.coder.Init(r.Items())
+	c.Assert(s.coder.Generate("sgo"), check.IsNil)
 }
