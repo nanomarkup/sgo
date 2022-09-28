@@ -57,7 +57,9 @@ func (b *Builder) Clean(application string) error {
 		}
 		return err
 	}
-	return goClean(folderPath)
+	os.Chdir(folderPath)
+	defer os.Chdir(wd)
+	return goClean()
 }
 
 func (b *Builder) SetLogger(logger Logger) {

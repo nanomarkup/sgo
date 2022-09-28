@@ -332,8 +332,8 @@ func goBuild(src, dst string) error {
 	return cmd.Run()
 }
 
-func goClean(src string) error {
-	cmd := exec.Command("go", "clean", src)
+func goClean() error {
+	cmd := exec.Command("go", "clean")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
