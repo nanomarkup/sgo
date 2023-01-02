@@ -32,6 +32,8 @@ const (
 	workingFolderName string = ".sgo"
 	// Go module file name
 	moduleFileName = "go.mod"
+	// Go checksum file name
+	checksumFileName = "go.sum"
 )
 
 type adapter struct {
@@ -336,7 +338,17 @@ func goClean() error {
 	cmd := exec.Command("go", "clean")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	// remove go.mod and go.sum files
+	if _, err := os.Stat(moduleFileName); err == nil {
+		os.Remove(moduleFileName)
+	}
+	if _, err := os.Stat(checksumFileName); err == nil {
+		os.Remove(checksumFileName)
+	}
+	return nil
 }
 
 func readItem(name string, items map[string]map[string]string) (map[string]string, error) {
