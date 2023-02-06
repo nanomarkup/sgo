@@ -18,8 +18,8 @@ sgo:
     entry {src}/plugins/sgo.Plugin
 
 {src}/plugins/sgo.Plugin:
-	Coder *{src}/app.Coder
-	Builder *{src}/app.Builder
+	Coder *{src}.Coder
+	Builder *{src}.Builder
 	Handshake github.com/hashicorp/go-plugin.HandshakeConfig
 	Logger {src}/helper/hashicorp/hclog.NewFileOut("sgo", {logTrace})
 

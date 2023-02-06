@@ -27,8 +27,8 @@ task cbuild code, build
 # Synopsis: Remove generated files
 task clean {
     $Status = Start-Process -FilePath 'sb' -ArgumentList 'clean' -NoNewWindow -PassThru -Wait 
-    if (Test-Path -Path '.\app\test') {
-        Remove-Item -Path '.\app\test' -Recurse
+    if (Test-Path -Path '.\test') {
+        Remove-Item -Path '.\test' -Recurse
     }
     Assert($Status.ExitCode -eq 0) 'The "clean" command failed'
 }
@@ -46,14 +46,13 @@ task cinstall cbuild, install
 
 # Synopsis: Run tests
 task test {
-    Set-Location -Path 'app'
     $Status = Start-Process -FilePath 'go' -ArgumentList 'test' -NoNewWindow -PassThru -Wait
     Assert($Status.ExitCode -eq 0) 'The test command failed'
 }
 
 # Synopsis: Generate documentation
 task doc {
-    GenDoc -PackageName 'app'
+    GenDoc -PackageName '.'
     GenDoc -PackageName 'helper\hashicorp\hclog'
     GenDoc -PackageName 'plugins'
     GenDoc -PackageName 'plugins\sgo'

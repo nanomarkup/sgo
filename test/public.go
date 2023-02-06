@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 
-	"github.com/sapplications/sgo/app"
+	"github.com/sapplications/sgo"
 )
 
 type Runner interface {
@@ -20,7 +20,7 @@ type Item1 struct {
 	Field2    Field2
 	Field3    Field3
 	Runner    Runner
-	Logger    app.Logger
+	Logger    sgo.Logger
 	Hello     func(string)
 	EmptyFunc func()
 }

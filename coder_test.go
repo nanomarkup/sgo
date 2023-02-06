@@ -1,4 +1,4 @@
-package app
+package sgo
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/sapplications/smod/lod"
+	"github.com/sapplications/dl"
 	"gopkg.in/check.v1"
 )
 
@@ -91,16 +91,14 @@ func (s *sgoSuite) TestCodeCreators(c *check.C) {
 }
 
 func (s *sgoSuite) TestCodeSgoUsingGoModules(c *check.C) {
-	m := lod.Manager{}
+	m := dl.Manager{}
+	m.Kind = kind
 	m.SetLogger(hclog.New(&hclog.LoggerOptions{
 		Name:   "test",
 		Level:  hclog.Trace,
 		Output: os.Stdout,
 	}))
-	wd, _ := os.Getwd()
-	defer os.Chdir(wd)
-	os.Chdir(".\\..")
-	r, e := m.ReadAll("sb")
+	r, e := m.ReadAll()
 	if e != nil {
 		fmt.Println(e.Error())
 		c.Error()

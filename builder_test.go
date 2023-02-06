@@ -1,4 +1,4 @@
-package app
+package sgo
 
 import (
 	"fmt"

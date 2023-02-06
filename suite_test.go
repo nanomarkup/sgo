@@ -1,4 +1,4 @@
-package app
+package sgo
 
 import (
 	"os"
@@ -26,8 +26,8 @@ var logger = helper.NewStdOut("sgo", helper.LogLever.Debug)
 var suite = sgoSuite{
 	name: appName,
 	items: map[string]map[string]string{
-		"apps": {appName: ""},
-		"test": {"entry": itemPath},
+		"apps":  {appName: ""},
+		appName: {"entry": itemPath},
 	},
 	coder:   Coder{Logger: logger},
 	builder: Builder{Logger: logger},
@@ -35,7 +35,8 @@ var suite = sgoSuite{
 var _ = check.Suite(&suite)
 
 const (
-	appName  string = "test"
+	kind     string = "sb"
+	appName  string = ".test"
 	itemPath string = "github.com/sapplications/sgo/test.Item1"
 )
 

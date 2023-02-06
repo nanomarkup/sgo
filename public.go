@@ -1,7 +1,7 @@
 // Copyright 2022 Vitalii Noha vitalii.noga@gmail.com. All rights reserved.
 
 // Package app generates Go sources of an application.
-package app
+package sgo
 
 type Coder struct {
 	Logger Logger
