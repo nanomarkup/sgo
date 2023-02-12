@@ -331,7 +331,7 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 								funcName = getFuncName(&v, ref)
 								code = append(code, fmt.Sprintf("\tv.%s = %s()\n", k, funcName))
 							} else {
-								funcName, err = adapter.adapt(types, typeId1, k, typeId2, ref)
+								funcName, err = adapter.adapt(types, typeId1, k, typeId2, v.group, ref)
 								if err != nil {
 									return nil, nil, err
 								}

@@ -13,7 +13,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB string, ref bool) (string, error) {
+func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB string, groupB string, ref bool) (string, error) {
 	infoA := getType(types, typeA)
 	if infoA == nil {
 		return "", fmt.Errorf(TypeIsMissingF, typeA)
@@ -37,9 +37,14 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 		return "", fmt.Errorf(TypeIsMissingF, fieldId)
 	}
 	// create a new struct
+	name := ""
 	nameA := fmt.Sprintf("%s%s", cases.Title(language.English, cases.NoLower).String(filepath.Base(fieldInfo.PkgPath)), fieldInfo.Name)
 	nameB := fmt.Sprintf("%s%s", cases.Title(language.English, cases.NoLower).String(filepath.Base(infoB.PkgPath)), infoB.Name)
-	name := fmt.Sprintf("%s%s%s", nameB, nameA, GenAdapterSufix)
+	if groupB == "" {
+		name = fmt.Sprintf("%s%s%s", nameB, nameA, GenAdapterSufix)
+	} else {
+		name = fmt.Sprintf("%s%s%s%s%s", groupB, GenGroupPrefix, nameB, nameA, GenAdapterSufix)
+	}
 	funcName := GenNamePrefix + name
 	if ref {
 		funcName = funcName + GenRefSufix
@@ -162,7 +167,11 @@ func (o *adapter) adapt(types []typeInfo, typeA string, fieldA string, typeB str
 		code = append(code, fmt.Sprintf("func %s() %s {\n", funcName, name))
 		code = append(code, fmt.Sprintf("\tv := %s{}\n", name))
 	}
-	code = append(code, fmt.Sprintf("\tv.%s = *%s%s%s()\n", infoB.Name, GenNamePrefix, nameB, GenRefSufix))
+	if groupB == "" {
+		code = append(code, fmt.Sprintf("\tv.%s = *%s%s%s()\n", infoB.Name, GenNamePrefix, nameB, GenRefSufix))
+	} else {
+		code = append(code, fmt.Sprintf("\tv.%s = *%s%s%s%s%s()\n", infoB.Name, GenNamePrefix, groupB, GenGroupPrefix, nameB, GenRefSufix))
+	}
 	code = append(code, "\treturn v\n")
 	code = append(code, "}\n\n")
 	// keep a new code
