@@ -46,10 +46,15 @@ func (s *sgoSuite) TestCodeParameters(c *check.C) {
 
 func (s *sgoSuite) TestCodeRefs(c *check.C) {
 	defer s.clean()
+	//f2Name := "github.com/sapplications/sgo/test.Field2"
 	items := s.copyItems()
 	items[itemPath] = map[string]string{
 		"Runner": "*github.com/sapplications/sgo/test.RunnerImpl",
+		//"Field2Ref": "*" + f2Name,
 	}
+	//items[f2Name] = map[string]string{
+	//	"Name": "\"Hello\"",
+	//}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
 	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {

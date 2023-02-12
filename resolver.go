@@ -217,7 +217,14 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 	// process dependencies
 	var refIt *item
 	var err error
-	deps := r.items[itemName]
+	var deps map[string]string
+	groupItemName := ""
+	if group == "" {
+		deps = r.items[simpleItemName]
+	} else {
+		groupItemName = fmt.Sprintf("[%s]%s", it.group, simpleItemName)
+		deps = r.items[groupItemName]
+	}
 	for dep, res := range deps {
 		refIt, err = r.getItem(res, list)
 		if err != nil {
@@ -259,10 +266,10 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 		}
 	}
 	// add a simple item to the result set
-	if it.group == "" {
+	if groupItemName == "" {
 		list[simpleItemName] = it
 	} else {
-		list[fmt.Sprintf("[%s]%s", it.group, simpleItemName)] = it
+		list[groupItemName] = it
 	}
 	// if the original item is ref item then add it too
 	if refType {
