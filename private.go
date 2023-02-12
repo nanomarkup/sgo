@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"github.com/mitchellh/go-ps"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -50,6 +52,7 @@ type resolver struct {
 type item struct {
 	kind     uint
 	name     string
+	group    string
 	pkg      string
 	path     string
 	original string
@@ -209,6 +212,19 @@ func getTypeInfo(wd string, list []typeInfo) ([]typeInfo, error) {
 		}
 	}
 	return nil, errors.New(ErrorOnGettingTypeDetails)
+}
+
+func getFuncName(it *item, ref bool) string {
+	group := ""
+	if it.group != "" {
+		group = it.group + GenGroupPrefix
+	}
+	name := fmt.Sprintf("%s%s%s%s", GenNamePrefix, group, cases.Title(language.English, cases.NoLower).String(it.pkg), it.name)
+	name = strings.ReplaceAll(name, "-", "_")
+	if ref {
+		name = name + GenRefSufix
+	}
+	return name
 }
 
 func isDirEmpty(path string) (bool, error) {

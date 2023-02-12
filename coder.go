@@ -11,9 +11,6 @@ import (
 	"sort"
 	"strings"
 	"syscall"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 func (g *Coder) Init(items map[string]map[string]string) {
@@ -200,8 +197,7 @@ func (g *Coder) generateDepsFile(application, entryPoint, wd string) error {
 		case itemKind.Func:
 			writer.WriteString(fmt.Sprintf("\t%s.%s\n", entry.pkg, entry.name))
 		case itemKind.Struct:
-			funcName := fmt.Sprintf("\tapp := %s%s%s()\n", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(entry.pkg), entry.name)
-			funcName = strings.ReplaceAll(funcName, "-", "_")
+			funcName := fmt.Sprintf("\tapp := %s()\n", getFuncName(&entry, false))
 			writer.WriteString(funcName)
 			writer.WriteString("\tapp.Execute()\n")
 		case itemKind.String:
@@ -244,8 +240,7 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 			case itemKind.Func:
 				appendImport(imports, it.path+it.pkg)
 			case itemKind.Struct:
-				funcName = fmt.Sprintf("%s%s%s", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(it.pkg), it.name)
-				funcName = strings.ReplaceAll(funcName, "-", "_")
+				funcName = getFuncName(&it, false)
 				fullNameDefine = it.name
 				fullNameReturn = it.name
 				if len(it.path) > 0 {
@@ -293,11 +288,7 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 										case itemKind.Func:
 											parameter = d.name
 										case itemKind.Struct:
-											funcName = fmt.Sprintf("%s%s%s", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(d.pkg), d.name)
-											funcName = strings.ReplaceAll(funcName, "-", "_")
-											if len(d.path) > 0 && d.path[0] == '*' {
-												funcName = funcName + GenRefSufix
-											}
+											funcName = getFuncName(&d, len(d.path) > 0 && d.path[0] == '*')
 											parameter = funcName + "()"
 										case itemKind.String, itemKind.Number:
 											parameter = d.original
@@ -325,6 +316,9 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 								typeId1 = typeId1[1:]
 							}
 							typeId2 = v.original
+							if v.group != "" {
+								typeId2 = typeId2[len(v.group)+2:]
+							}
 							if typeId2[0] == '*' {
 								typeId2 = typeId2[1:]
 							}
@@ -334,11 +328,7 @@ func (g *Coder) generateItems(entryPoint string, list items, types []typeInfo) (
 							}
 							ref = len(v.path) > 0 && v.path[0] == '*'
 							if supported {
-								funcName = fmt.Sprintf("%s%s%s", GenNamePrefix, cases.Title(language.English, cases.NoLower).String(v.pkg), v.name)
-								funcName = strings.ReplaceAll(funcName, "-", "_")
-								if ref {
-									funcName = funcName + GenRefSufix
-								}
+								funcName = getFuncName(&v, ref)
 								code = append(code, fmt.Sprintf("\tv.%s = %s()\n", k, funcName))
 							} else {
 								funcName, err = adapter.adapt(types, typeId1, k, typeId2, ref)

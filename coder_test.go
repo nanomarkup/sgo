@@ -90,6 +90,49 @@ func (s *sgoSuite) TestCodeCreators(c *check.C) {
 	}), check.Equals, true)
 }
 
+func (s *sgoSuite) TestCodeGroupItem(c *check.C) {
+	defer s.clean()
+	items := s.copyItems()
+	f2Name := "github.com/sapplications/sgo/test.Field2"
+	f2NameV2 := "[Hi]github.com/sapplications/sgo/test.Field2"
+	items[itemPath] = map[string]string{
+		"Field2":   f2Name,
+		"Field2V2": f2NameV2,
+	}
+	items[f2Name] = map[string]string{
+		"Name": "\"Hello\"",
+	}
+	items[f2NameV2] = map[string]string{
+		"Name": "\"Hi\"",
+	}
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
+}
+
+// func (s *sgoSuite) TestCodeStructInitialization(c *check.C) {
+// 	defer s.clean()
+// 	items := s.copyItems()
+// 	items[itemPath] = map[string]string{
+// 		"Field2": "github.com/sapplications/sgo/test.Field2",
+// 		"Field2V2": "github.com/sapplications/sgo/test.Field2 {	Name \"World\" }",
+// 	}
+// 	items["github.com/sapplications/sgo/test.Field2"] = map[string]string{
+// 		"Name": "\"Hello\"",
+// 	}
+// 	s.coder.Init(items)
+// 	c.Assert(s.coder.Generate(s.name), check.IsNil)
+// 	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+// 		if err := s.builder.Build(s.name); err != nil {
+// 			t.Error(err)
+// 		}
+// 	}), check.Equals, true)
+// }
+
 func (s *sgoSuite) TestCodeSgoUsingGoModules(c *check.C) {
 	m := dl.Manager{}
 	m.Kind = kind

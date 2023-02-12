@@ -18,6 +18,7 @@ type Item1 struct {
 	Field1    Field1
 	Field1V2  Field1
 	Field2    Field2
+	Field2V2  Field2
 	Field3    Field3
 	Runner    Runner
 	Logger    sgo.Logger

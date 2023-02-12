@@ -3,6 +3,7 @@
 package sgo
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -11,7 +12,10 @@ import (
 func (r *resolver) resolve(wd string) (items, []typeInfo, error) {
 	id := ""
 	kind := reflect.Interface
-	list := r.getItems()
+	list, err := r.getItems()
+	if err != nil {
+		return nil, nil, err
+	}
 	items := map[string]bool{}
 	input := []typeInfo{}
 	for _, x := range list {
@@ -22,7 +26,13 @@ func (r *resolver) resolve(wd string) (items, []typeInfo, error) {
 		default:
 			continue
 		}
-		id = strings.TrimPrefix(x.original, "*")
+		id = x.original
+		// remove the group name from the original
+		if x.group != "" {
+			id = id[len(x.group)+2:]
+		}
+		// process only once as a simple type
+		id = strings.TrimPrefix(id, "*")
 		// do not process the same item again
 		if _, found := items[id]; found {
 			continue
@@ -121,23 +131,45 @@ func (r *resolver) resolve(wd string) (items, []typeInfo, error) {
 	return list, all, nil
 }
 
-func (r *resolver) getItems() (list items) {
+func (r *resolver) getItems() (list items, err error) {
 	list = make(items)
-	r.getItem(r.entryPoint, list)
-	return list
+	_, err = r.getItem(r.entryPoint, list)
+	if err != nil {
+		return nil, err
+	} else {
+		return list, nil
+	}
 }
 
-func (r *resolver) getItem(itemName string, list items) *item {
+func (r *resolver) getItem(itemName string, list items) (*item, error) {
 	if it, found := list[itemName]; found {
-		return &it
+		return &it, nil
 	}
 	// parse item and add it to the list
 	pkg := ""
 	name := ""
 	kind := itemKind.Struct
+	group := ""
 	path := ""
 	pathSep := "/"
 	nameSep := "."
+	refType := false
+	simpleItemName := itemName
+	// extract group name if exists
+	if strings.HasPrefix(itemName, "[") {
+		if pos := strings.Index(itemName, "]"); pos > -1 {
+			group = itemName[1:pos]
+			simpleItemName = itemName[pos+1:]
+		} else {
+			return nil, fmt.Errorf(GroupEndTokenIsMissing)
+		}
+	}
+	// process a simple item dependencies
+	if simpleItemName[0] == '*' {
+		refType = true
+		simpleItemName = simpleItemName[1:]
+	}
+	// check item type and process it
 	if strings.HasPrefix(itemName, "\"") {
 		kind = itemKind.String
 		name = itemName
@@ -158,6 +190,9 @@ func (r *resolver) getItem(itemName string, list items) *item {
 		if dataLen > 1 {
 			data = data[:dataLen-1]
 			path = strings.Join(data, pathSep) + pathSep
+			if group != "" {
+				path = path[len(group)+2:]
+			}
 		}
 		// get pkg and item
 		if fullName != "" {
@@ -173,21 +208,21 @@ func (r *resolver) getItem(itemName string, list items) *item {
 	it := item{
 		kind,
 		name,
+		group,
 		pkg,
 		path,
 		itemName,
 		make(items),
 	}
-	// process a simple item dependencies
-	simpleItemName := itemName
-	if itemName[0] == '*' {
-		simpleItemName = itemName[1:]
-	}
+	// process dependencies
 	var refIt *item
-	deps := r.items[simpleItemName]
+	var err error
+	deps := r.items[itemName]
 	for dep, res := range deps {
-		refIt = r.getItem(res, list)
-		if refIt != nil {
+		refIt, err = r.getItem(res, list)
+		if err != nil {
+			return nil, err
+		} else if refIt != nil {
 			it.deps[dep] = *refIt
 		}
 	}
@@ -208,22 +243,30 @@ func (r *resolver) getItem(itemName string, list items) *item {
 						"",
 						"",
 						"",
+						"",
 						param,
 						make(items),
 					}
 				} else {
-					refIt = r.getItem(param, list)
-					if refIt != nil {
+					refIt, err = r.getItem(param, list)
+					if err != nil {
+						return nil, err
+					} else if refIt != nil {
 						it.deps[id] = *refIt
 					}
 				}
 			}
 		}
 	}
-	// add simple and ref items to the result set and return it
-	list[simpleItemName] = it
-	if itemName[0] == '*' {
+	// add a simple item to the result set
+	if it.group == "" {
+		list[simpleItemName] = it
+	} else {
+		list[fmt.Sprintf("[%s]%s", it.group, simpleItemName)] = it
+	}
+	// if the original item is ref item then add it too
+	if refType {
 		list[itemName] = it
 	}
-	return &it
+	return &it, nil
 }

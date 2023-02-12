@@ -28,6 +28,7 @@ type Logger interface {
 const (
 	// application
 	GenNamePrefix   string = "Use"
+	GenGroupPrefix  string = "Group"
 	GenRefSufix     string = "Ref"
 	GenAdapterSufix string = "Adapter"
 	// notifications
@@ -49,4 +50,5 @@ const (
 	WrongNumberOfOutputParamsF           string = "the number of output parameters are different for \"%s\" method of \"%s\" type and \"%s\" type"
 	WrongNumberOfOutputParamsForMethodsF string = "the number of output parameters are different for \"%s\" and \"%s\" methods"
 	ErrorOnGettingTypeDetails            string = "cannot collect type details"
+	GroupEndTokenIsMissing               string = "cannot get a group name, the \"]\" is missing"
 )
