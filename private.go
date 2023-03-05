@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/mitchellh/go-ps"
 	"golang.org/x/text/cases"
@@ -38,6 +39,10 @@ const (
 	checksumFileName = "go.sum"
 )
 
+type parser struct {
+	itemParser itemParser
+}
+
 type adapter struct {
 	code    map[string][]string
 	imports *imports
@@ -56,6 +61,7 @@ type item struct {
 	pkg      string
 	path     string
 	original string
+	ref      bool
 	deps     items
 }
 
@@ -66,11 +72,13 @@ type alias string
 type imports map[string]alias
 
 var itemKind = struct {
+	None   uint
 	Func   uint
 	Struct uint
 	String uint
 	Number uint
 }{
+	0,
 	1,
 	2,
 	3,
@@ -99,6 +107,30 @@ type method struct {
 	Name string
 	In   []field
 	Out  []field
+}
+
+var (
+	newParser  sync.Once
+	parserInst *parser
+)
+
+func getParser() *parser {
+	newParser.Do(func() {
+		parserInst = &parser{}
+		// the order of parsers is very important!
+		parserInst.itemParser = &groupParser{
+			&refParser{
+				&strParser{
+					&intParser{
+						&funcParser{
+							&pathParser{},
+						},
+					},
+				},
+			},
+		}
+	})
+	return parserInst
 }
 
 func getType(types []typeInfo, id string) *typeInfo {

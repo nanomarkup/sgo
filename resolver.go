@@ -145,81 +145,27 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 	if it, found := list[itemName]; found {
 		return &it, nil
 	}
-	// parse item and add it to the list
-	pkg := ""
-	name := ""
-	kind := itemKind.Struct
-	group := ""
-	path := ""
-	pathSep := "/"
-	nameSep := "."
-	refType := false
-	simpleItemName := itemName
-	// extract group name if exists
-	if strings.HasPrefix(itemName, "[") {
-		if pos := strings.Index(itemName, "]"); pos > -1 {
-			group = itemName[1:pos]
-			simpleItemName = itemName[pos+1:]
-		} else {
-			return nil, fmt.Errorf(GroupEndTokenIsMissing)
-		}
+	it, err := getParser().parseItem(itemName)
+	if err != nil {
+		return nil, err
 	}
-	// process a simple item dependencies
+	refType := false
+	simpleItemName := ""
+	if it.group == "" {
+		simpleItemName = itemName
+	} else {
+		simpleItemName = itemName[len(it.group)+2:]
+	}
 	if simpleItemName[0] == '*' {
 		refType = true
 		simpleItemName = simpleItemName[1:]
 	}
-	// check item type and process it
-	if strings.HasPrefix(itemName, "\"") {
-		kind = itemKind.String
-		name = itemName
-	} else if _, err := strconv.ParseFloat(itemName, 64); err == nil {
-		kind = itemKind.Number
-		name = itemName
-	} else {
-		// get path
-		var data []string
-		if pos := strings.Index(itemName, "("); pos > -1 {
-			kind = itemKind.Func
-			data = strings.Split(itemName[:pos], pathSep)
-		} else {
-			data = strings.Split(itemName, pathSep)
-		}
-		dataLen := len(data)
-		fullName := data[dataLen-1]
-		if dataLen > 1 {
-			data = data[:dataLen-1]
-			path = strings.Join(data, pathSep) + pathSep
-			if group != "" {
-				path = path[len(group)+2:]
-			}
-		}
-		// get pkg and item
-		if fullName != "" {
-			data = strings.Split(fullName, nameSep)
-			dataLen = len(data)
-			name = data[dataLen-1]
-			if dataLen > 1 {
-				pkg = data[0]
-			}
-		}
-	}
-	// create an item
-	it := item{
-		kind,
-		name,
-		group,
-		pkg,
-		path,
-		itemName,
-		make(items),
-	}
 	// process dependencies
 	var refIt *item
-	var err error
+	//var err error
 	var deps map[string]string
 	groupItemName := ""
-	if group == "" {
+	if it.group == "" {
 		deps = r.items[simpleItemName]
 	} else {
 		groupItemName = fmt.Sprintf("[%s]%s", it.group, simpleItemName)
@@ -236,7 +182,7 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 	// process the input parameters for functions
 	if it.kind == itemKind.Func {
 		id := ""
-		name = it.original[strings.Index(it.original, "(")+1:]
+		name := it.original[strings.Index(it.original, "(")+1:]
 		name = name[0:strings.Index(name, ")")]
 		name = strings.Trim(name, " ")
 		if name != "" {
@@ -252,6 +198,7 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 						"",
 						"",
 						param,
+						false,
 						make(items),
 					}
 				} else {

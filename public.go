@@ -41,6 +41,7 @@ const (
 	TypeIsNotInterface                   string = "the receiver of \"%s\" type should be type of interface"
 	TypeDoesNotSupportedF                string = "\"%s\" type of parameter does not supported"
 	ItemIsMissingF                       string = "the %s item is not found"
+	ItemIsIncorrect                      string = "cannot detect type of \"%s\" item"
 	FieldIsMissingF                      string = "\"%s\" field of \"%s\" type does not exist"
 	MethodIsMissingF                     string = "the \"%s\" method is missing in \"%s\""
 	ParamsDoesNotSupportedF              string = "cannot resolve \"%s\" and \"%s\" parameters"
