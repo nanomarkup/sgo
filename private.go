@@ -39,13 +39,27 @@ const (
 	checksumFileName = "go.sum"
 )
 
+type itemParser interface {
+	execute(string, *item) error
+}
+
+type structGenerator interface {
+	execute(it item, types []typeInfo, imp imports, code *[]string, adapter *adapter) error
+}
+
 type parser struct {
 	itemParser itemParser
 }
 
+type compiler struct{}
+
+type generator struct {
+	structGenerator structGenerator
+}
+
 type adapter struct {
 	code    map[string][]string
-	imports *imports
+	imports imports
 }
 
 type resolver struct {
@@ -110,20 +124,22 @@ type method struct {
 }
 
 var (
-	newParser  sync.Once
-	parserInst *parser
+	newParser    sync.Once
+	newCompiler  sync.Once
+	parserInst   *parser
+	compilerInst *compiler
 )
 
 func getParser() *parser {
 	newParser.Do(func() {
 		parserInst = &parser{}
 		// the order of parsers is very important!
-		parserInst.itemParser = &groupParser{
-			&refParser{
-				&strParser{
-					&intParser{
-						&funcParser{
-							&pathParser{},
+		parserInst.itemParser = &itemGroupParser{
+			&itemRefParser{
+				&itemStrParser{
+					&itemIntParser{
+						&itemFuncParser{
+							&itemPathParser{},
 						},
 					},
 				},
@@ -131,6 +147,13 @@ func getParser() *parser {
 		}
 	})
 	return parserInst
+}
+
+func getCompiler() *compiler {
+	newCompiler.Do(func() {
+		compilerInst = &compiler{}
+	})
+	return compilerInst
 }
 
 func getType(types []typeInfo, id string) *typeInfo {
@@ -244,6 +267,20 @@ func getTypeInfo(wd string, list []typeInfo) ([]typeInfo, error) {
 		}
 	}
 	return nil, errors.New(ErrorOnGettingTypeDetails)
+}
+
+func getFieldInfo(types []typeInfo, item string, field string) (*field, error) {
+	item = strings.TrimPrefix(item, "*")
+	info := getType(types, item)
+	if info == nil {
+		return nil, fmt.Errorf(TypeIsMissingF, item)
+	}
+	for _, v := range info.Fields {
+		if v.FieldName == field {
+			return &v, nil
+		}
+	}
+	return nil, fmt.Errorf(FieldIsMissingF, field, item)
 }
 
 func getFuncName(it *item, ref bool) string {

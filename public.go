@@ -51,5 +51,7 @@ const (
 	WrongNumberOfOutputParamsF           string = "the number of output parameters are different for \"%s\" method of \"%s\" type and \"%s\" type"
 	WrongNumberOfOutputParamsForMethodsF string = "the number of output parameters are different for \"%s\" and \"%s\" methods"
 	ErrorOnGettingTypeDetails            string = "cannot collect type details"
+	FuncBegTokenIsMissing                string = "incorrect syntax, the \"(\" is missing"
+	FuncEndTokenIsMissing                string = "incorrect syntax, the \")\" is missing"
 	GroupEndTokenIsMissing               string = "cannot get a group name, the \"]\" is missing"
 )

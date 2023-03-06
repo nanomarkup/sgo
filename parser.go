@@ -6,31 +6,27 @@ import (
 	"strings"
 )
 
-type itemParser interface {
-	execute(string, *item) error
-}
-
-type refParser struct {
+type itemRefParser struct {
 	next itemParser
 }
 
-type groupParser struct {
+type itemGroupParser struct {
 	next itemParser
 }
 
-type strParser struct {
+type itemStrParser struct {
 	next itemParser
 }
 
-type intParser struct {
+type itemIntParser struct {
 	next itemParser
 }
 
-type funcParser struct {
+type itemFuncParser struct {
 	next itemParser
 }
 
-type pathParser struct {
+type itemPathParser struct {
 	next itemParser
 }
 
@@ -46,7 +42,26 @@ func (p *parser) parseItem(input string) (item, error) {
 	}
 }
 
-func (p *refParser) execute(input string, item *item) error {
+func (p *parser) parseFunc(input string) ([]string, error) {
+	pos := strings.Index(input, "(")
+	if pos < 0 {
+		return nil, fmt.Errorf(FuncBegTokenIsMissing)
+	}
+	input = input[pos+1:]
+	pos = strings.Index(input, ")")
+	if pos < 0 {
+		return nil, fmt.Errorf(FuncEndTokenIsMissing)
+	}
+	input = input[0:pos]
+	input = strings.Trim(input, " ")
+	if input == "" {
+		return []string{}, nil
+	} else {
+		return strings.Split(input, ","), nil
+	}
+}
+
+func (p *itemRefParser) execute(input string, item *item) error {
 	item.ref = input[0] == '*'
 	// if item.ref {
 	// 	input = input[1:]
@@ -58,7 +73,7 @@ func (p *refParser) execute(input string, item *item) error {
 	}
 }
 
-func (p *groupParser) execute(input string, item *item) error {
+func (p *itemGroupParser) execute(input string, item *item) error {
 	if strings.HasPrefix(input, "[") {
 		if pos := strings.Index(input, "]"); pos > -1 {
 			item.group = input[1:pos]
@@ -74,7 +89,7 @@ func (p *groupParser) execute(input string, item *item) error {
 	}
 }
 
-func (p *strParser) execute(input string, item *item) error {
+func (p *itemStrParser) execute(input string, item *item) error {
 	if item.kind == itemKind.None && strings.HasPrefix(input, "\"") {
 		item.kind = itemKind.String
 		item.name = input
@@ -86,7 +101,7 @@ func (p *strParser) execute(input string, item *item) error {
 	}
 }
 
-func (p *intParser) execute(input string, item *item) error {
+func (p *itemIntParser) execute(input string, item *item) error {
 	if item.kind == itemKind.None {
 		if _, err := strconv.ParseFloat(input, 64); err == nil {
 			item.kind = itemKind.Number
@@ -100,7 +115,7 @@ func (p *intParser) execute(input string, item *item) error {
 	}
 }
 
-func (p *funcParser) execute(input string, item *item) error {
+func (p *itemFuncParser) execute(input string, item *item) error {
 	if item.kind == itemKind.None {
 		if pos := strings.Index(input, "("); pos > -1 {
 			item.kind = itemKind.Func
@@ -113,7 +128,7 @@ func (p *funcParser) execute(input string, item *item) error {
 	}
 }
 
-func (p *pathParser) execute(input string, item *item) error {
+func (p *itemPathParser) execute(input string, item *item) error {
 	if item.kind == itemKind.None || item.kind == itemKind.Func {
 		var data []string
 		pathSep := "/"
