@@ -206,7 +206,8 @@ func (o *adapter) areTypesCompatible(types []typeInfo, typeA string, fieldA stri
 	}
 	fieldInfo := getType(types, fieldId)
 	if fieldInfo == nil {
-		if fieldOrigInfo.Id == "." && fieldOrigInfo.Kind == reflect.Interface && fieldOrigInfo.PkgPath == "" && fieldOrigInfo.TypeName == "" {
+		if fieldOrigInfo.Id == "." && fieldOrigInfo.PkgPath == "" && fieldOrigInfo.TypeName == "" &&
+			(fieldOrigInfo.Kind == reflect.Interface || fieldOrigInfo.Kind == reflect.Pointer) {
 			// it is type of interface{}
 			return true, nil
 		} else {

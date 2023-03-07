@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/sapplications/sgo"
+	"github.com/spf13/cobra"
 )
 
 type Runner interface {
@@ -25,6 +26,7 @@ type Item1 struct {
 	Logger    sgo.Logger
 	Hello     func(string)
 	EmptyFunc func()
+	Cmd       *cobra.Command
 }
 
 type Field1 struct{}
@@ -57,6 +59,10 @@ func Hello(name string) {
 	fmt.Printf("Hello %s!", name)
 }
 
+func RetHello() func(name string) {
+	return Hello
+}
+
 func EmptyFunc() {
 
 }
@@ -67,4 +73,8 @@ func (r *RunnerImpl) Run() {
 
 func (i *Item1) Execute() {
 
+}
+
+func CmdCobra(cmd *cobra.Command, args []string) error {
+	return nil
 }

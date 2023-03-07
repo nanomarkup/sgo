@@ -81,6 +81,21 @@ func (s *sgoSuite) TestCodeFuncs(c *check.C) {
 	}), check.Equals, true)
 }
 
+func (s *sgoSuite) TestCodeRetFuncs(c *check.C) {
+	defer s.clean()
+	items := s.copyItems()
+	items[itemPath] = map[string]string{
+		"Hello": ".github.com/sapplications/sgo/test.RetHello()",
+	}
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
+}
+
 func (s *sgoSuite) TestCodeCreators(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
@@ -101,15 +116,21 @@ func (s *sgoSuite) TestCodeGroupItem(c *check.C) {
 	items := s.copyItems()
 	f2Name := "github.com/sapplications/sgo/test.Field2"
 	f2NameV2 := "[Hi]github.com/sapplications/sgo/test.Field2"
+	cmdName := "[Cobra]github.com/spf13/cobra.Command"
+	cmdRefName := "[Cobra]*github.com/spf13/cobra.Command"
 	items[itemPath] = map[string]string{
 		"Field2":   f2Name,
 		"Field2V2": f2NameV2,
+		"Cmd":      cmdRefName,
 	}
 	items[f2Name] = map[string]string{
 		"Name": "\"Hello\"",
 	}
 	items[f2NameV2] = map[string]string{
 		"Name": "\"Hi\"",
+	}
+	items[cmdName] = map[string]string{
+		"RunE": "github.com/sapplications/sgo/test.CmdCobra()",
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)

@@ -76,6 +76,7 @@ type item struct {
 	path     string
 	original string
 	ref      bool
+	exec     bool
 	deps     items
 }
 
@@ -136,10 +137,12 @@ func getParser() *parser {
 		// the order of parsers is very important!
 		parserInst.itemParser = &itemGroupParser{
 			&itemRefParser{
-				&itemStrParser{
-					&itemIntParser{
-						&itemFuncParser{
-							&itemPathParser{},
+				&itemExecParser{
+					&itemStrParser{
+						&itemIntParser{
+							&itemFuncParser{
+								&itemPathParser{},
+							},
 						},
 					},
 				},

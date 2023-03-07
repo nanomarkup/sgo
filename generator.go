@@ -104,10 +104,15 @@ func (s *structInitGen) genFunc(f item) (string, error) {
 }
 
 func (s *structInitGen) execute(it item, types []typeInfo, imp imports, code *[]string, adapter *adapter) error {
+	var err error
+	var field *field
 	for k, v := range it.deps {
 		switch v.kind {
 		case itemKind.Func:
 			alias := string(appendImport(imp, v.path+v.pkg))
+			if alias != "" {
+				alias += "."
+			}
 			if k == "." {
 				// execute the method
 				f, e := s.genFunc(v)
@@ -116,21 +121,33 @@ func (s *structInitGen) execute(it item, types []typeInfo, imp imports, code *[]
 				}
 				*code = append(*code, fmt.Sprintf("\tv.%s\n", f))
 			} else {
-				field, err := getFieldInfo(types, it.original, k)
+				if it.group == "" {
+					field, err = getFieldInfo(types, it.original, k)
+				} else {
+					field, err = getFieldInfo(types, it.original[len(it.group)+2:], k)
+				}
 				if err != nil {
 					return err
 				}
 				switch field.Kind {
 				case reflect.Func:
-					// if it is a reference to a func then just return it as is
-					*code = append(*code, fmt.Sprintf("\tv.%s = %s.%s\n", k, alias, v.name))
+					if v.exec {
+						f, e := s.genFunc(v)
+						if e != nil {
+							return e
+						}
+						*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", k, alias, f))
+					} else {
+						// it is a reference to a func then just return it as is
+						*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", k, alias, v.name))
+					}
 				case reflect.Struct, reflect.Interface:
-					// if it is a reference to a struct then perform it
+					// if it is a reference to a struct then perform the function
 					f, e := s.genFunc(v)
 					if e != nil {
 						return e
 					}
-					*code = append(*code, fmt.Sprintf("\tv.%s = %s.%s\n", k, alias, f))
+					*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", k, alias, f))
 				default:
 					return fmt.Errorf(TypeDoesNotSupportedF, v.original)
 				}

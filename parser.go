@@ -10,6 +10,10 @@ type itemRefParser struct {
 	next itemParser
 }
 
+type itemExecParser struct {
+	next itemParser
+}
+
 type itemGroupParser struct {
 	next itemParser
 }
@@ -66,6 +70,18 @@ func (p *itemRefParser) execute(input string, item *item) error {
 	// if item.ref {
 	// 	input = input[1:]
 	// }
+	if p.next != nil {
+		return p.next.execute(input, item)
+	} else {
+		return nil
+	}
+}
+
+func (p *itemExecParser) execute(input string, item *item) error {
+	item.exec = input[0] == '.'
+	if item.exec {
+		input = input[1:]
+	}
 	if p.next != nil {
 		return p.next.execute(input, item)
 	} else {
