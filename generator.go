@@ -71,53 +71,69 @@ func (s *structCreateGen) execute(it item, types []typeInfo, imp imports, code *
 	}
 }
 
+func (s *structInitGen) genFunc(f item) (string, error) {
+	code := f.name + "("
+	if len(f.deps) > 0 {
+		keys := reflect.ValueOf(f.deps).MapKeys()
+		keysOrder := func(i, j int) bool { return keys[i].String() < keys[j].String() }
+		sort.Slice(keys, keysOrder)
+		for i, n := range keys {
+			d := f.deps[n.String()]
+			// process all parameters IN PROGRESS
+			parameter := ""
+			switch d.kind {
+			case itemKind.Func:
+				parameter = d.name
+			case itemKind.Struct:
+				funcName := getFuncName(&d, len(d.path) > 0 && d.path[0] == '*')
+				parameter = funcName + "()"
+			case itemKind.String, itemKind.Number:
+				parameter = d.original
+			default:
+				return "", fmt.Errorf(TypeDoesNotSupportedF, d.original)
+			}
+
+			if i == 0 {
+				code = code + parameter
+			} else {
+				code = fmt.Sprintf("%s, %s", code, parameter)
+			}
+		}
+	}
+	return code + ")", nil
+}
+
 func (s *structInitGen) execute(it item, types []typeInfo, imp imports, code *[]string, adapter *adapter) error {
 	for k, v := range it.deps {
 		switch v.kind {
 		case itemKind.Func:
 			alias := string(appendImport(imp, v.path+v.pkg))
-			field, err := getFieldInfo(types, it.original, k)
-			if err != nil {
-				return err
-			}
-			switch field.Kind {
-			case reflect.Func:
-				// if it is a reference to a func then just return it as is
-				*code = append(*code, fmt.Sprintf("\tv.%s = %s.%s\n", k, alias, v.name))
-			case reflect.Struct, reflect.Interface:
-				// if it is a reference to a struct then perform it
-				name := v.name + "("
-				if len(v.deps) > 0 {
-					keys := reflect.ValueOf(v.deps).MapKeys()
-					keysOrder := func(i, j int) bool { return keys[i].String() < keys[j].String() }
-					sort.Slice(keys, keysOrder)
-					for i, n := range keys {
-						d := v.deps[n.String()]
-						// process all parameters IN PROGRESS
-						parameter := ""
-						switch d.kind {
-						case itemKind.Func:
-							parameter = d.name
-						case itemKind.Struct:
-							funcName := getFuncName(&d, len(d.path) > 0 && d.path[0] == '*')
-							parameter = funcName + "()"
-						case itemKind.String, itemKind.Number:
-							parameter = d.original
-						default:
-							return fmt.Errorf(TypeDoesNotSupportedF, d.original)
-						}
-
-						if i == 0 {
-							name = name + parameter
-						} else {
-							name = fmt.Sprintf("%s, %s", name, parameter)
-						}
-					}
+			if k == "." {
+				// execute the method
+				f, e := s.genFunc(v)
+				if e != nil {
+					return e
 				}
-				name = name + ")"
-				*code = append(*code, fmt.Sprintf("\tv.%s = %s.%s\n", k, alias, name))
-			default:
-				return fmt.Errorf(TypeDoesNotSupportedF, v.original)
+				*code = append(*code, fmt.Sprintf("\tv.%s\n", f))
+			} else {
+				field, err := getFieldInfo(types, it.original, k)
+				if err != nil {
+					return err
+				}
+				switch field.Kind {
+				case reflect.Func:
+					// if it is a reference to a func then just return it as is
+					*code = append(*code, fmt.Sprintf("\tv.%s = %s.%s\n", k, alias, v.name))
+				case reflect.Struct, reflect.Interface:
+					// if it is a reference to a struct then perform it
+					f, e := s.genFunc(v)
+					if e != nil {
+						return e
+					}
+					*code = append(*code, fmt.Sprintf("\tv.%s = %s.%s\n", k, alias, f))
+				default:
+					return fmt.Errorf(TypeDoesNotSupportedF, v.original)
+				}
 			}
 		case itemKind.Struct:
 			typeId1 := it.original

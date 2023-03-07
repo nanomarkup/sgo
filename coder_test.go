@@ -70,6 +70,7 @@ func (s *sgoSuite) TestCodeFuncs(c *check.C) {
 	items[itemPath] = map[string]string{
 		"Hello":     "github.com/sapplications/sgo/test.Hello()",
 		"EmptyFunc": "github.com/sapplications/sgo/test.EmptyFunc()",
+		".":         "Execute()",
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
