@@ -4,7 +4,6 @@ package sgo
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -51,7 +50,7 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 	// process dependencies
 	var refIt *item
 	//var err error
-	var deps map[string]string
+	var deps [][]string
 	groupItemName := ""
 	if it.group == "" {
 		deps = r.items[simpleItemName]
@@ -59,12 +58,24 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 		groupItemName = fmt.Sprintf("[%s]%s", it.group, simpleItemName)
 		deps = r.items[groupItemName]
 	}
-	for dep, res := range deps {
-		refIt, err = r.getItem(res, list)
+	var k, v string
+	var l int
+	for _, n := range deps {
+		l = len(n)
+		if l == 0 {
+			continue
+		}
+		k = n[0]
+		if l > 1 {
+			v = n[1]
+		} else {
+			v = ""
+		}
+		refIt, err = r.getItem(v, list)
 		if err != nil {
 			return nil, err
 		} else if refIt != nil {
-			it.deps[dep] = *refIt
+			it.deps = append(it.deps, dep{k, refIt})
 		}
 	}
 	// process the input parameters for functions
@@ -73,14 +84,13 @@ func (r *resolver) getItem(itemName string, list items) (*item, error) {
 		if err != nil {
 			return nil, err
 		}
-		id := ""
-		for index, param := range params {
-			id = strconv.Itoa(index)
-			refIt, err = r.getItem(strings.Trim(param, " "), list)
+		for _, param := range params {
+			param = strings.Trim(param, " ")
+			refIt, err = r.getItem(param, list)
 			if err != nil {
 				return nil, err
 			} else if refIt != nil {
-				it.deps[id] = *refIt
+				it.deps = append(it.deps, dep{param, refIt})
 			}
 		}
 	}

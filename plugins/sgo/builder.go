@@ -9,7 +9,7 @@ func (b *builder) Build(app string) error {
 	return nil
 }
 
-func (b *builder) Clean(app string, sources *map[string]map[string]string) error {
+func (b *builder) Clean(app string, sources *map[string][][]string) error {
 	// remove the built files
 	if err := b.builder.Clean(app); err != nil {
 		return err
@@ -22,7 +22,7 @@ func (b *builder) Clean(app string, sources *map[string]map[string]string) error
 	return nil
 }
 
-func (b *builder) Generate(app string, sources *map[string]map[string]string) error {
+func (b *builder) Generate(app string, sources *map[string][][]string) error {
 	b.coder.Init(*sources)
 	if err := b.coder.Generate(app); err != nil {
 		return err

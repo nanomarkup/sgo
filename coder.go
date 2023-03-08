@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-func (g *Coder) Init(items map[string]map[string]string) {
+func (g *Coder) Init(items map[string][][]string) {
 	g.items = items
 }
 
@@ -69,23 +69,26 @@ func (g *Coder) Clean(application string) error {
 		return fmt.Errorf(AppIsNotSpecified)
 	}
 	if apps, err := readItem(appsItemName, g.items); err == nil {
-		if _, found := apps[application]; found {
-			if dir, err := os.Getwd(); err == nil {
-				folderPath := filepath.Join(dir, application)
-				// remove the apps file
-				filePath := filepath.Join(folderPath, appFileName)
-				if _, err := os.Stat(filePath); err == nil {
-					os.Remove(filePath)
+		for _, app := range apps {
+			if app[0] == application {
+				if dir, err := os.Getwd(); err == nil {
+					folderPath := filepath.Join(dir, application)
+					// remove the apps file
+					filePath := filepath.Join(folderPath, appFileName)
+					if _, err := os.Stat(filePath); err == nil {
+						os.Remove(filePath)
+					}
+					// remove the deps file
+					filePath = filepath.Join(folderPath, depsFileName)
+					if _, err := os.Stat(filePath); err == nil {
+						os.Remove(filePath)
+					}
+					// remove the application folder if it is empty
+					if empty, _ := isDirEmpty(folderPath); empty {
+						os.Remove(folderPath)
+					}
 				}
-				// remove the deps file
-				filePath = filepath.Join(folderPath, depsFileName)
-				if _, err := os.Stat(filePath); err == nil {
-					os.Remove(filePath)
-				}
-				// remove the application folder if it is empty
-				if empty, _ := isDirEmpty(folderPath); empty {
-					os.Remove(folderPath)
-				}
+				break
 			}
 		}
 	}
@@ -103,7 +106,14 @@ func (g *Coder) entryPoint(application string) (string, error) {
 		return "", err
 	}
 	// check the applicatin is exist
-	if _, found := apps[application]; !found {
+	found := false
+	for _, app := range apps {
+		if app[0] == application {
+			found = true
+			break
+		}
+	}
+	if !found {
 		return "", fmt.Errorf(AppIsMissingF, application)
 	}
 	// read app details
@@ -112,7 +122,18 @@ func (g *Coder) entryPoint(application string) (string, error) {
 		return "", err
 	}
 	// get entry point
-	entry, found := info[entryAttrName]
+	entry := ""
+	found = false
+	for _, i := range info {
+		if i[0] == entryAttrName {
+			if len(i) < 2 {
+				return "", fmt.Errorf(AppAttrIsEmptyF, entryAttrName, application)
+			}
+			found = true
+			entry = i[1]
+			break
+		}
+	}
 	if !found {
 		return "", fmt.Errorf(AppAttrIsMissingF, entryAttrName, application)
 	}
@@ -260,15 +281,15 @@ func (g *Coder) getStructItems(original string, list items, result map[string]bo
 			result[original] = true
 		}
 		for _, v := range it.deps {
-			switch v.kind {
+			switch v.item.kind {
 			case itemKind.Func:
-				for _, d := range v.deps {
-					if d.kind == itemKind.Struct {
-						g.getStructItems(d.original, list, result)
+				for _, d := range v.item.deps {
+					if d.item.kind == itemKind.Struct {
+						g.getStructItems(d.item.original, list, result)
 					}
 				}
 			case itemKind.Struct:
-				g.getStructItems(v.original, list, result)
+				g.getStructItems(v.item.original, list, result)
 			}
 		}
 	}

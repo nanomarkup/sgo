@@ -17,7 +17,7 @@ func Test(t *testing.T) {
 type sgoSuite struct {
 	t       *testing.T
 	name    string
-	items   map[string]map[string]string
+	items   map[string][][]string
 	coder   Coder
 	builder Builder
 }
@@ -25,9 +25,9 @@ type sgoSuite struct {
 var logger = helper.NewStdOut("sgo", helper.LogLever.Debug)
 var suite = sgoSuite{
 	name: appName,
-	items: map[string]map[string]string{
-		"apps":  {appName: ""},
-		appName: {"entry": itemPath},
+	items: map[string][][]string{
+		"apps":  [][]string{{appName, ""}},
+		appName: [][]string{{"entry", itemPath}},
 	},
 	coder:   Coder{Logger: logger},
 	builder: Builder{Logger: logger},
@@ -46,8 +46,8 @@ func (s *sgoSuite) clean() {
 	}
 }
 
-func (s *sgoSuite) copyItems() (r map[string]map[string]string) {
-	r = map[string]map[string]string{}
+func (s *sgoSuite) copyItems() (r map[string][][]string) {
+	r = map[string][][]string{}
 	for k, v := range s.items {
 		r[k] = v
 	}

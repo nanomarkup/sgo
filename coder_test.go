@@ -13,9 +13,9 @@ import (
 func (s *sgoSuite) TestCodeNumbers(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
-	items[itemPath] = map[string]string{
-		"Int1":   "5",
-		"Float1": "5.02",
+	items[itemPath] = [][]string{
+		{"Int1", "5"},
+		{"Float1", "5.02"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -29,11 +29,11 @@ func (s *sgoSuite) TestCodeNumbers(c *check.C) {
 func (s *sgoSuite) TestCodeParameters(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
-	items[itemPath] = map[string]string{
-		"Field1V2": "github.com/sapplications/sgo/test.NewField1V2(\"Ariana\", \"Noha\")",
-		"Field2":   "github.com/sapplications/sgo/test.NewField2(\"Vitalii\")",
-		"Field3":   "github.com/sapplications/sgo/test.NewField3(github.com/sapplications/sgo/test.Field1)",
-		"Logger":   "github.com/sapplications/sgo/helper/hashicorp/hclog.NewFileOut(\"sgo\", 3)",
+	items[itemPath] = [][]string{
+		{"Field1V2", "github.com/sapplications/sgo/test.NewField1V2(\"Ariana\", \"Noha\")"},
+		{"Field2", "github.com/sapplications/sgo/test.NewField2(\"Vitalii\")"},
+		{"Field3", "github.com/sapplications/sgo/test.NewField3(github.com/sapplications/sgo/test.Field1)"},
+		{"Logger", "github.com/sapplications/sgo/helper/hashicorp/hclog.NewFileOut(\"sgo\", 3)"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -48,8 +48,8 @@ func (s *sgoSuite) TestCodeRefs(c *check.C) {
 	defer s.clean()
 	//f2Name := "github.com/sapplications/sgo/test.Field2"
 	items := s.copyItems()
-	items[itemPath] = map[string]string{
-		"Runner": "*github.com/sapplications/sgo/test.RunnerImpl",
+	items[itemPath] = [][]string{
+		{"Runner", "*github.com/sapplications/sgo/test.RunnerImpl"},
 		//"Field2Ref": "*" + f2Name,
 	}
 	//items[f2Name] = map[string]string{
@@ -67,10 +67,10 @@ func (s *sgoSuite) TestCodeRefs(c *check.C) {
 func (s *sgoSuite) TestCodeFuncs(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
-	items[itemPath] = map[string]string{
-		"Hello":     "github.com/sapplications/sgo/test.Hello()",
-		"EmptyFunc": "github.com/sapplications/sgo/test.EmptyFunc()",
-		".":         "Execute()",
+	items[itemPath] = [][]string{
+		{"Hello", "github.com/sapplications/sgo/test.Hello()"},
+		{"EmptyFunc", "github.com/sapplications/sgo/test.EmptyFunc()"},
+		{".", "Execute()"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -84,8 +84,8 @@ func (s *sgoSuite) TestCodeFuncs(c *check.C) {
 func (s *sgoSuite) TestCodeRetFuncs(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
-	items[itemPath] = map[string]string{
-		"Hello": ".github.com/sapplications/sgo/test.RetHello()",
+	items[itemPath] = [][]string{
+		{"Hello", ".github.com/sapplications/sgo/test.RetHello()"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -99,8 +99,8 @@ func (s *sgoSuite) TestCodeRetFuncs(c *check.C) {
 func (s *sgoSuite) TestCodeCreators(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
-	items[itemPath] = map[string]string{
-		"Field1": "github.com/sapplications/sgo/test.NewField1()",
+	items[itemPath] = [][]string{
+		{"Field1", "github.com/sapplications/sgo/test.NewField1()"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -118,19 +118,19 @@ func (s *sgoSuite) TestCodeGroupItem(c *check.C) {
 	f2NameV2 := "[Hi]github.com/sapplications/sgo/test.Field2"
 	cmdName := "[Cobra]github.com/spf13/cobra.Command"
 	cmdRefName := "[Cobra]*github.com/spf13/cobra.Command"
-	items[itemPath] = map[string]string{
-		"Field2":   f2Name,
-		"Field2V2": f2NameV2,
-		"Cmd":      cmdRefName,
+	items[itemPath] = [][]string{
+		{"Field2", f2Name},
+		{"Field2V2", f2NameV2},
+		{"Cmd", cmdRefName},
 	}
-	items[f2Name] = map[string]string{
-		"Name": "\"Hello\"",
+	items[f2Name] = [][]string{
+		{"Name", "\"Hello\""},
 	}
-	items[f2NameV2] = map[string]string{
-		"Name": "\"Hi\"",
+	items[f2NameV2] = [][]string{
+		{"Name", "\"Hi\""},
 	}
-	items[cmdName] = map[string]string{
-		"RunE": "github.com/sapplications/sgo/test.CmdCobra()",
+	items[cmdName] = [][]string{
+		{"RunE", "github.com/sapplications/sgo/test.CmdCobra()"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)

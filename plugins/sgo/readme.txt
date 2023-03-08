@@ -1,7 +1,6 @@
 package sgo // import "github.com/sapplications/sgo/plugins/sgo"
 
-Package sgo implements a sgo plugin. It generates Go sources of an
-application.
+Package sgo implements a sgo plugin. It generates Go sources of an application.
 
 CONSTANTS
 
@@ -18,7 +17,7 @@ type Builder interface {
 }
 
 type Coder interface {
-	Init(items map[string]map[string]string)
+	Init(items map[string][][]string)
 	Clean(appName string) error
 	Generate(appName string) error
 	SetLogger(logger Logger)

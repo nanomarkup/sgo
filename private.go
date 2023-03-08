@@ -65,7 +65,8 @@ type adapter struct {
 type resolver struct {
 	application string
 	entryPoint  string
-	items       map[string]map[string]string
+	// item -> dep -> resolver
+	items map[string][][]string
 }
 
 type item struct {
@@ -77,10 +78,16 @@ type item struct {
 	original string
 	ref      bool
 	exec     bool
-	deps     items
+	deps     deps
+}
+
+type dep struct {
+	name string
+	item *item
 }
 
 type items map[string]item
+type deps []dep
 
 type alias string
 
@@ -439,7 +446,7 @@ func goClean() error {
 	return nil
 }
 
-func readItem(name string, items map[string]map[string]string) (map[string]string, error) {
+func readItem(name string, items map[string][][]string) ([][]string, error) {
 	if apps, found := items[name]; found {
 		return apps, nil
 	}

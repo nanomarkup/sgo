@@ -5,7 +5,7 @@ package sgo
 
 type Coder struct {
 	Logger Logger
-	items  map[string]map[string]string
+	items  map[string][][]string
 }
 
 type Builder struct {
@@ -35,6 +35,7 @@ const (
 	// errors
 	AppIsMissingF                        string = "the selected \"%s\" application does not found"
 	AppIsNotSpecified                    string = "the application is not specified"
+	AppAttrIsEmptyF                      string = "the \"%s\" attribute is empty for the \"%s\" application"
 	AppAttrIsMissingF                    string = "the \"%s\" attribute is not exist for the \"%s\" application"
 	TypeIsMissingF                       string = "\"%s\" type does not found"
 	TypeIsMissingFieldIdF                string = "\"%s\" type does not found (field Id)"

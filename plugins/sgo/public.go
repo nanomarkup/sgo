@@ -17,7 +17,7 @@ type Plugin struct {
 }
 
 type Coder interface {
-	Init(items map[string]map[string]string)
+	Init(items map[string][][]string)
 	Clean(appName string) error
 	Generate(appName string) error
 	SetLogger(logger Logger)

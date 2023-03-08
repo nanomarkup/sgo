@@ -3,7 +3,6 @@ package sgo
 import (
 	"fmt"
 	"reflect"
-	"sort"
 )
 
 type structBegGen struct {
@@ -71,33 +70,28 @@ func (s *structCreateGen) execute(it item, types []typeInfo, imp imports, code *
 	}
 }
 
-func (s *structInitGen) genFunc(f item) (string, error) {
+func (s *structInitGen) genFunc(f *item) (string, error) {
 	code := f.name + "("
-	if len(f.deps) > 0 {
-		keys := reflect.ValueOf(f.deps).MapKeys()
-		keysOrder := func(i, j int) bool { return keys[i].String() < keys[j].String() }
-		sort.Slice(keys, keysOrder)
-		for i, n := range keys {
-			d := f.deps[n.String()]
-			// process all parameters IN PROGRESS
-			parameter := ""
-			switch d.kind {
-			case itemKind.Func:
-				parameter = d.name
-			case itemKind.Struct:
-				funcName := getFuncName(&d, len(d.path) > 0 && d.path[0] == '*')
-				parameter = funcName + "()"
-			case itemKind.String, itemKind.Number:
-				parameter = d.original
-			default:
-				return "", fmt.Errorf(TypeDoesNotSupportedF, d.original)
-			}
+	for i, n := range f.deps {
+		d := n.item
+		// process all parameters IN PROGRESS
+		parameter := ""
+		switch d.kind {
+		case itemKind.Func:
+			parameter = d.name
+		case itemKind.Struct:
+			funcName := getFuncName(d, len(d.path) > 0 && d.path[0] == '*')
+			parameter = funcName + "()"
+		case itemKind.String, itemKind.Number:
+			parameter = d.original
+		default:
+			return "", fmt.Errorf(TypeDoesNotSupportedF, d.original)
+		}
 
-			if i == 0 {
-				code = code + parameter
-			} else {
-				code = fmt.Sprintf("%s, %s", code, parameter)
-			}
+		if i == 0 {
+			code = code + parameter
+		} else {
+			code = fmt.Sprintf("%s, %s", code, parameter)
 		}
 	}
 	return code + ")", nil
@@ -106,50 +100,50 @@ func (s *structInitGen) genFunc(f item) (string, error) {
 func (s *structInitGen) execute(it item, types []typeInfo, imp imports, code *[]string, adapter *adapter) error {
 	var err error
 	var field *field
-	for k, v := range it.deps {
-		switch v.kind {
+	for _, v := range it.deps {
+		switch v.item.kind {
 		case itemKind.Func:
-			alias := string(appendImport(imp, v.path+v.pkg))
+			alias := string(appendImport(imp, v.item.path+v.item.pkg))
 			if alias != "" {
 				alias += "."
 			}
-			if k == "." {
+			if v.name == "." {
 				// execute the method
-				f, e := s.genFunc(v)
+				f, e := s.genFunc(v.item)
 				if e != nil {
 					return e
 				}
 				*code = append(*code, fmt.Sprintf("\tv.%s\n", f))
 			} else {
 				if it.group == "" {
-					field, err = getFieldInfo(types, it.original, k)
+					field, err = getFieldInfo(types, it.original, v.name)
 				} else {
-					field, err = getFieldInfo(types, it.original[len(it.group)+2:], k)
+					field, err = getFieldInfo(types, it.original[len(it.group)+2:], v.name)
 				}
 				if err != nil {
 					return err
 				}
 				switch field.Kind {
 				case reflect.Func:
-					if v.exec {
-						f, e := s.genFunc(v)
+					if v.item.exec {
+						f, e := s.genFunc(v.item)
 						if e != nil {
 							return e
 						}
-						*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", k, alias, f))
+						*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", v.name, alias, f))
 					} else {
 						// it is a reference to a func then just return it as is
-						*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", k, alias, v.name))
+						*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", v.name, alias, v.item.name))
 					}
 				case reflect.Struct, reflect.Interface:
 					// if it is a reference to a struct then perform the function
-					f, e := s.genFunc(v)
+					f, e := s.genFunc(v.item)
 					if e != nil {
 						return e
 					}
-					*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", k, alias, f))
+					*code = append(*code, fmt.Sprintf("\tv.%s = %s%s\n", v.name, alias, f))
 				default:
-					return fmt.Errorf(TypeDoesNotSupportedF, v.original)
+					return fmt.Errorf(TypeDoesNotSupportedF, v.item.original)
 				}
 			}
 		case itemKind.Struct:
@@ -157,31 +151,31 @@ func (s *structInitGen) execute(it item, types []typeInfo, imp imports, code *[]
 			if typeId1[0] == '*' {
 				typeId1 = typeId1[1:]
 			}
-			typeId2 := v.original
-			if v.group != "" {
-				typeId2 = typeId2[len(v.group)+2:]
+			typeId2 := v.item.original
+			if v.item.group != "" {
+				typeId2 = typeId2[len(v.item.group)+2:]
 			}
 			if typeId2[0] == '*' {
 				typeId2 = typeId2[1:]
 			}
-			supported, err := adapter.areTypesCompatible(types, typeId1, k, typeId2)
+			supported, err := adapter.areTypesCompatible(types, typeId1, v.name, typeId2)
 			if err != nil {
 				return err
 			}
-			ref := len(v.path) > 0 && v.path[0] == '*'
+			ref := len(v.item.path) > 0 && v.item.path[0] == '*'
 			funcName := ""
 			if supported {
-				funcName = getFuncName(&v, ref)
-				*code = append(*code, fmt.Sprintf("\tv.%s = %s()\n", k, funcName))
+				funcName = getFuncName(v.item, ref)
+				*code = append(*code, fmt.Sprintf("\tv.%s = %s()\n", v.name, funcName))
 			} else {
-				funcName, err = adapter.adapt(types, typeId1, k, typeId2, v.group, ref)
+				funcName, err = adapter.adapt(types, typeId1, v.name, typeId2, v.item.group, ref)
 				if err != nil {
 					return err
 				}
-				*code = append(*code, fmt.Sprintf("\tv.%s = %s()\n", k, funcName))
+				*code = append(*code, fmt.Sprintf("\tv.%s = %s()\n", v.name, funcName))
 			}
 		case itemKind.String, itemKind.Number:
-			*code = append(*code, fmt.Sprintf("\tv.%s = %s\n", k, v.original))
+			*code = append(*code, fmt.Sprintf("\tv.%s = %s\n", v.name, v.item.original))
 		}
 	}
 	if s.next != nil {

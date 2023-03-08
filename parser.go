@@ -35,7 +35,7 @@ type itemPathParser struct {
 }
 
 func (p *parser) parseItem(input string) (item, error) {
-	it := item{kind: itemKind.None, original: input, deps: make(items)}
+	it := item{kind: itemKind.None, original: input, deps: deps{}}
 	if err := p.itemParser.execute(input, &it); err != nil {
 		return item{}, err
 	}

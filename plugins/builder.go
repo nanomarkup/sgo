@@ -17,14 +17,14 @@ func (c *builderClient) Build(app string) error {
 	}, new(interface{}))
 }
 
-func (c *builderClient) Clean(app string, sources *map[string]map[string]string) error {
+func (c *builderClient) Clean(app string, sources *map[string][][]string) error {
 	return c.client.Call("Plugin.Clean", map[string]interface{}{
 		"app":     app,
 		"sources": sources,
 	}, new(interface{}))
 }
 
-func (c *builderClient) Generate(app string, sources *map[string]map[string]string) error {
+func (c *builderClient) Generate(app string, sources *map[string][][]string) error {
 	return c.client.Call("Plugin.Generate", map[string]interface{}{
 		"app":     app,
 		"sources": sources,
@@ -38,11 +38,11 @@ func (s *builderServer) Build(args map[string]interface{}, resp *interface{}) er
 }
 
 func (s *builderServer) Clean(args map[string]interface{}, resp *interface{}) error {
-	return s.Impl.Clean(args["app"].(string), args["sources"].(*map[string]map[string]string))
+	return s.Impl.Clean(args["app"].(string), args["sources"].(*map[string][][]string))
 }
 
 func (s *builderServer) Generate(args map[string]interface{}, resp *interface{}) error {
-	return s.Impl.Generate(args["app"].(string), args["sources"].(*map[string]map[string]string))
+	return s.Impl.Generate(args["app"].(string), args["sources"].(*map[string][][]string))
 }
 
 // The implementation of plugin.Plugin so we can serve/consume this
@@ -57,11 +57,11 @@ func (s *builderServer) Generate(args map[string]interface{}, resp *interface{})
 // plugin connection and is a more advanced use case.
 
 func (p *BuilderPlugin) Server(*plugin.MuxBroker) (interface{}, error) {
-	gob.Register(new(map[string]map[string]string))
+	gob.Register(new(map[string][][]string))
 	return &builderServer{Impl: p.Impl}, nil
 }
 
 func (BuilderPlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
-	gob.Register(new(map[string]map[string]string))
+	gob.Register(new(map[string][][]string))
 	return &builderClient{client: c}, nil
 }
