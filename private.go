@@ -94,17 +94,19 @@ type alias string
 type imports map[string]alias
 
 var itemKind = struct {
-	None   uint
-	Func   uint
-	Struct uint
-	String uint
-	Number uint
+	None    uint
+	Func    uint
+	Struct  uint
+	String  uint
+	Number  uint
+	Boolean uint
 }{
 	0,
 	1,
 	2,
 	3,
 	4,
+	5,
 }
 
 type typeInfo struct {
@@ -146,9 +148,11 @@ func getParser() *parser {
 			&itemRefParser{
 				&itemExecParser{
 					&itemStrParser{
-						&itemIntParser{
-							&itemFuncParser{
-								&itemPathParser{},
+						&itemBooleanParser{
+							&itemNumberParser{
+								&itemFuncParser{
+									&itemPathParser{},
+								},
 							},
 						},
 					},

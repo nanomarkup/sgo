@@ -26,6 +26,21 @@ func (s *sgoSuite) TestCodeNumbers(c *check.C) {
 	}), check.Equals, true)
 }
 
+func (s *sgoSuite) TestCodeBoolean(c *check.C) {
+	defer s.clean()
+	items := s.copyItems()
+	items[itemPath] = [][]string{
+		{"Bool1", "true"},
+	}
+	s.coder.Init(items)
+	c.Assert(s.coder.Generate(s.name), check.IsNil)
+	c.Assert(s.t.Run(fmt.Sprintf("%s-Build", getTestName(c)), func(t *testing.T) {
+		if err := s.builder.Build(s.name); err != nil {
+			t.Error(err)
+		}
+	}), check.Equals, true)
+}
+
 func (s *sgoSuite) TestCodeParameters(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()

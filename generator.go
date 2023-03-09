@@ -82,7 +82,7 @@ func (s *structInitGen) genFunc(f *item) (string, error) {
 		case itemKind.Struct:
 			funcName := getFuncName(d, len(d.path) > 0 && d.path[0] == '*')
 			parameter = funcName + "()"
-		case itemKind.String, itemKind.Number:
+		case itemKind.String, itemKind.Number, itemKind.Boolean:
 			parameter = d.original
 		default:
 			return "", fmt.Errorf(TypeDoesNotSupportedF, d.original)
@@ -174,7 +174,7 @@ func (s *structInitGen) execute(it item, types []typeInfo, imp imports, code *[]
 				}
 				*code = append(*code, fmt.Sprintf("\tv.%s = %s()\n", v.name, funcName))
 			}
-		case itemKind.String, itemKind.Number:
+		case itemKind.String, itemKind.Number, itemKind.Boolean:
 			*code = append(*code, fmt.Sprintf("\tv.%s = %s\n", v.name, v.item.original))
 		}
 	}

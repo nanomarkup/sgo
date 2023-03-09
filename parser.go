@@ -22,7 +22,11 @@ type itemStrParser struct {
 	next itemParser
 }
 
-type itemIntParser struct {
+type itemNumberParser struct {
+	next itemParser
+}
+
+type itemBooleanParser struct {
 	next itemParser
 }
 
@@ -117,10 +121,24 @@ func (p *itemStrParser) execute(input string, item *item) error {
 	}
 }
 
-func (p *itemIntParser) execute(input string, item *item) error {
+func (p *itemNumberParser) execute(input string, item *item) error {
 	if item.kind == itemKind.None {
 		if _, err := strconv.ParseFloat(input, 64); err == nil {
 			item.kind = itemKind.Number
+			item.name = input
+		}
+	}
+	if p.next != nil {
+		return p.next.execute(input, item)
+	} else {
+		return nil
+	}
+}
+
+func (p *itemBooleanParser) execute(input string, item *item) error {
+	if item.kind == itemKind.None {
+		if input == "true" || input == "false" {
+			item.kind = itemKind.Boolean
 			item.name = input
 		}
 	}

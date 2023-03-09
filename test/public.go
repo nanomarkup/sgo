@@ -15,6 +15,7 @@ type RunnerImpl struct{}
 
 type Item1 struct {
 	Int1      int
+	Bool1     bool
 	Float1    float32
 	Field1    Field1
 	Field1V2  Field1
