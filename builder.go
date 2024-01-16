@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 func (b *Builder) Build(application string) error {
@@ -33,7 +34,10 @@ func (b *Builder) Build(application string) error {
 		}
 	}
 	// build the application
-	filePath = filepath.Join(folderPath, application+".exe")
+	filePath = filepath.Join(folderPath, application)
+	if runtime.GOOS == "windows" {
+		filePath += ".exe"
+	}
 	os.Chdir(folderPath)
 	defer os.Chdir(wd)
 

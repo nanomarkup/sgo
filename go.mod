@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/dastoori/higgs v1.1.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.3.4 // indirect
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect

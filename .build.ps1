@@ -26,19 +26,30 @@ task cbuild code, build
 
 # Synopsis: Remove generated files
 task clean {
-    $Status = Start-Process -FilePath 'sb' -ArgumentList 'clean' -NoNewWindow -PassThru -Wait 
-    if (Test-Path -Path '.\.test') {
-        Remove-Item -Path '.\.test' -Recurse
+    $AppPath = './sgo/sgo'
+    if ($PSVersionTable.Platform -ne 'Unix') {
+        $AppPath += '.exe'
     }
-    Assert($Status.ExitCode -eq 0) 'The "clean" command failed'
+    if (Test-Path -Path $AppPath) {
+        Remove-Item -Path $AppPath
+    }
+    if (Test-Path -Path './.test') {
+        Remove-Item -Path './.test' -Recurse
+    }
 }
 
 # Synopsis: Install plugin
-task install {
-    $GoPath = "${Env:GOPATH}".TrimEnd(';')
+task install {        
+    $AppName = 'sgo'
+    if ($PSVersionTable.Platform -eq 'Unix') {
+        $GoPath = "${Env:HOME}/go"
+    } else {        
+        $GoPath = "${Env:GOPATH}".TrimEnd(';')
+        $AppName += '.exe'
+    }
     Set-Location -Path 'sgo'
-    Copy-Item -Path 'sgo.exe' -Destination '..\bin\'
-    Copy-Item -Path 'sgo.exe' -Destination "$GoPath\bin\"
+    Copy-Item -Path $AppName -Destination '../bin/'
+    Copy-Item -Path $AppName -Destination "$GoPath/bin/"
 }
 
 # Synopsis: Generate, build & install plugin
@@ -53,9 +64,9 @@ task test {
 # Synopsis: Generate documentation
 task doc {
     GenDoc -PackageName '.'
-    GenDoc -PackageName 'helper\hashicorp\hclog'
+    GenDoc -PackageName 'helper/hashicorp/hclog'
     GenDoc -PackageName 'plugins'
-    GenDoc -PackageName 'plugins\sgo'
+    GenDoc -PackageName 'plugins/sgo'
 }
 
 task . cbuild, test, clean, doc

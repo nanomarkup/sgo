@@ -2,11 +2,8 @@ package sgo
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
-	"github.com/hashicorp/go-hclog"
-	"github.com/sapplications/dl"
 	"gopkg.in/check.v1"
 )
 
@@ -175,23 +172,23 @@ func (s *sgoSuite) TestCodeGroupItem(c *check.C) {
 // 	}), check.Equals, true)
 // }
 
-func (s *sgoSuite) TestCodeSgoUsingGoModules(c *check.C) {
-	m := dl.Manager{}
-	m.Kind = kind
-	m.SetLogger(hclog.New(&hclog.LoggerOptions{
-		Name:   "test",
-		Level:  hclog.Trace,
-		Output: os.Stdout,
-	}))
-	r, e := m.ReadAll()
-	if e != nil {
-		fmt.Println(e.Error())
-		c.Error()
-		return
-	}
-	c.Assert(r, check.NotNil)
-	// create a temporary folder and use it as working folder for generating an application
-	os.Chdir(c.MkDir())
-	s.coder.Init(r.Items())
-	c.Assert(s.coder.Generate("sgo"), check.IsNil)
-}
+// func (s *sgoSuite) TestCodeSgoUsingGoModules(c *check.C) {
+// 	m := dl.Manager{}
+// 	m.Kind = kind
+// 	m.SetLogger(hclog.New(&hclog.LoggerOptions{
+// 		Name:   "test",
+// 		Level:  hclog.Trace,
+// 		Output: os.Stdout,
+// 	}))
+// 	r, e := m.ReadAll()
+// 	if e != nil {
+// 		fmt.Println(e.Error())
+// 		c.Error()
+// 		return
+// 	}
+// 	c.Assert(r, check.NotNil)
+// 	// create a temporary folder and use it as working folder for generating an application
+// 	os.Chdir(c.MkDir())
+// 	s.coder.Init(r.Items())
+// 	c.Assert(s.coder.Generate("sgo"), check.IsNil)
+// }

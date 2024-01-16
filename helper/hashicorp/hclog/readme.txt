@@ -1,10 +1,7 @@
 package helper // import "github.com/sapplications/sgo/helper/hashicorp/hclog"
-
 Package helper provides methods for using "github.com/hashicorp/go-hclog"
 sources.
-
 VARIABLES
-
 var LogLever = struct {
 	NoLevel uint
 	Trace   uint
@@ -22,8 +19,6 @@ var LogLever = struct {
 	5,
 	6,
 }
-
 FUNCTIONS
-
 func NewFileOut(name string, level uint) hclog.Logger
 func NewStdOut(name string, level uint) hclog.Logger

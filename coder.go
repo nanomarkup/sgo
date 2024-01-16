@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"syscall"
+
+	"github.com/dastoori/higgs"
 )
 
 func (g *Coder) Init(items map[string][][]string) {
@@ -35,11 +36,8 @@ func (g *Coder) Generate(application string) error {
 	if err = os.MkdirAll(wd, os.ModePerm); err != nil {
 		return err
 	}
-	pWd, err := syscall.UTF16PtrFromString(wd)
+	wd, err = higgs.Hide(wd)
 	if err != nil {
-		return err
-	}
-	if err = syscall.SetFileAttributes(pWd, syscall.FILE_ATTRIBUTE_HIDDEN); err != nil {
 		return err
 	}
 	defer os.RemoveAll(wd)
