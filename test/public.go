@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 
-	"github.com/sapplications/sgo"
+	"github.com/nanomarkup/sgo"
 	"github.com/spf13/cobra"
 )
 

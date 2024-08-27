@@ -1,4 +1,4 @@
-module github.com/sapplications/sgo
+module github.com/nanomarkup/sgo
 
 go 1.19
 
@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/go-hclog v1.4.0
 	github.com/hashicorp/go-plugin v1.4.9
 	github.com/mitchellh/go-ps v1.0.0
-	github.com/sapplications/dl v0.0.0-20230307210452-10788b3adb9b
+	github.com/nanomarkup/dl v0.0.0-20230307210452-10788b3adb9b
 	github.com/spf13/cobra v1.6.1
 	golang.org/x/text v0.8.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c

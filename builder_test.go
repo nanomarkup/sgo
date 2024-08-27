@@ -3,7 +3,7 @@ package sgo
 import (
 	"fmt"
 
-	helper "github.com/sapplications/sgo/helper/hashicorp/hclog"
+	helper "github.com/nanomarkup/sgo/helper/hashicorp/hclog"
 	"gopkg.in/check.v1"
 )
 

@@ -42,10 +42,10 @@ func (s *sgoSuite) TestCodeParameters(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = [][]string{
-		{"Field1V2", "github.com/sapplications/sgo/test.NewField1V2(\"Ariana\", \"Noha\")"},
-		{"Field2", "github.com/sapplications/sgo/test.NewField2(\"Vitalii\")"},
-		{"Field3", "github.com/sapplications/sgo/test.NewField3(github.com/sapplications/sgo/test.Field1)"},
-		{"Logger", "github.com/sapplications/sgo/helper/hashicorp/hclog.NewFileOut(\"sgo\", 3)"},
+		{"Field1V2", "github.com/nanomarkup/sgo/test.NewField1V2(\"Ariana\", \"Noha\")"},
+		{"Field2", "github.com/nanomarkup/sgo/test.NewField2(\"Vitalii\")"},
+		{"Field3", "github.com/nanomarkup/sgo/test.NewField3(github.com/nanomarkup/sgo/test.Field1)"},
+		{"Logger", "github.com/nanomarkup/sgo/helper/hashicorp/hclog.NewFileOut(\"sgo\", 3)"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -58,10 +58,10 @@ func (s *sgoSuite) TestCodeParameters(c *check.C) {
 
 func (s *sgoSuite) TestCodeRefs(c *check.C) {
 	defer s.clean()
-	//f2Name := "github.com/sapplications/sgo/test.Field2"
+	//f2Name := "github.com/nanomarkup/sgo/test.Field2"
 	items := s.copyItems()
 	items[itemPath] = [][]string{
-		{"Runner", "*github.com/sapplications/sgo/test.RunnerImpl"},
+		{"Runner", "*github.com/nanomarkup/sgo/test.RunnerImpl"},
 		//"Field2Ref": "*" + f2Name,
 	}
 	//items[f2Name] = map[string]string{
@@ -80,8 +80,8 @@ func (s *sgoSuite) TestCodeFuncs(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = [][]string{
-		{"Hello", "github.com/sapplications/sgo/test.Hello()"},
-		{"EmptyFunc", "github.com/sapplications/sgo/test.EmptyFunc()"},
+		{"Hello", "github.com/nanomarkup/sgo/test.Hello()"},
+		{"EmptyFunc", "github.com/nanomarkup/sgo/test.EmptyFunc()"},
 		{".", "Execute()"},
 	}
 	s.coder.Init(items)
@@ -97,7 +97,7 @@ func (s *sgoSuite) TestCodeRetFuncs(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = [][]string{
-		{"Hello", ".github.com/sapplications/sgo/test.RetHello()"},
+		{"Hello", ".github.com/nanomarkup/sgo/test.RetHello()"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -112,7 +112,7 @@ func (s *sgoSuite) TestCodeCreators(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
 	items[itemPath] = [][]string{
-		{"Field1", "github.com/sapplications/sgo/test.NewField1()"},
+		{"Field1", "github.com/nanomarkup/sgo/test.NewField1()"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -126,8 +126,8 @@ func (s *sgoSuite) TestCodeCreators(c *check.C) {
 func (s *sgoSuite) TestCodeGroupItem(c *check.C) {
 	defer s.clean()
 	items := s.copyItems()
-	f2Name := "github.com/sapplications/sgo/test.Field2"
-	f2NameV2 := "[Hi]github.com/sapplications/sgo/test.Field2"
+	f2Name := "github.com/nanomarkup/sgo/test.Field2"
+	f2NameV2 := "[Hi]github.com/nanomarkup/sgo/test.Field2"
 	cmdName := "[Cobra]github.com/spf13/cobra.Command"
 	cmdRefName := "[Cobra]*github.com/spf13/cobra.Command"
 	items[itemPath] = [][]string{
@@ -142,7 +142,7 @@ func (s *sgoSuite) TestCodeGroupItem(c *check.C) {
 		{"Name", "\"Hi\""},
 	}
 	items[cmdName] = [][]string{
-		{"RunE", "github.com/sapplications/sgo/test.CmdCobra()"},
+		{"RunE", "github.com/nanomarkup/sgo/test.CmdCobra()"},
 	}
 	s.coder.Init(items)
 	c.Assert(s.coder.Generate(s.name), check.IsNil)
@@ -157,10 +157,10 @@ func (s *sgoSuite) TestCodeGroupItem(c *check.C) {
 // 	defer s.clean()
 // 	items := s.copyItems()
 // 	items[itemPath] = map[string]string{
-// 		"Field2": "github.com/sapplications/sgo/test.Field2",
-// 		"Field2V2": "github.com/sapplications/sgo/test.Field2 {	Name \"World\" }",
+// 		"Field2": "github.com/nanomarkup/sgo/test.Field2",
+// 		"Field2V2": "github.com/nanomarkup/sgo/test.Field2 {	Name \"World\" }",
 // 	}
-// 	items["github.com/sapplications/sgo/test.Field2"] = map[string]string{
+// 	items["github.com/nanomarkup/sgo/test.Field2"] = map[string]string{
 // 		"Name": "\"Hello\"",
 // 	}
 // 	s.coder.Init(items)

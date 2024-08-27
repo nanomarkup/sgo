@@ -1,10 +1,10 @@
 package main
 
 import (
-	p3 "github.com/sapplications/sgo/plugins/sgo"
-	p4 "github.com/sapplications/sgo/helper/hashicorp/hclog"
-	p1 "github.com/sapplications/sgo"
 	p2 "github.com/hashicorp/go-plugin"
+	p1 "github.com/nanomarkup/sgo"
+	p4 "github.com/nanomarkup/sgo/helper/hashicorp/hclog"
+	p3 "github.com/nanomarkup/sgo/plugins/sgo"
 )
 
 func Execute() {
@@ -68,4 +68,3 @@ func UseSgoBuilderSgoBuilderAdapterRef() *SgoBuilderSgoBuilderAdapter {
 	v.Builder = *UseSgoBuilderRef()
 	return v
 }
-

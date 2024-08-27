@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	helper "github.com/sapplications/sgo/helper/hashicorp/hclog"
+	helper "github.com/nanomarkup/sgo/helper/hashicorp/hclog"
 	"gopkg.in/check.v1"
 )
 
@@ -37,7 +37,7 @@ var _ = check.Suite(&suite)
 const (
 	kind     string = "sb"
 	appName  string = ".test"
-	itemPath string = "github.com/sapplications/sgo/test.Item1"
+	itemPath string = "github.com/nanomarkup/sgo/test.Item1"
 )
 
 func (s *sgoSuite) clean() {

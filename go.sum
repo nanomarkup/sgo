@@ -51,8 +51,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
-github.com/sapplications/dl v0.0.0-20230307210452-10788b3adb9b h1:uf+8EzRJZpxr42I7uGgKBWbKTHb+TLTkW6eWl0853HA=
-github.com/sapplications/dl v0.0.0-20230307210452-10788b3adb9b/go.mod h1:qX6YDfBnecK5xzhJ5t+9ljBPkrOum9nIyb/Gp769jfk=
+github.com/nanomarkup/dl v0.0.0-20230307210452-10788b3adb9b h1:uf+8EzRJZpxr42I7uGgKBWbKTHb+TLTkW6eWl0853HA=
+github.com/nanomarkup/dl v0.0.0-20230307210452-10788b3adb9b/go.mod h1:qX6YDfBnecK5xzhJ5t+9ljBPkrOum9nIyb/Gp769jfk=
 github.com/spf13/cobra v1.6.1 h1:o94oiPyS4KD1mPy2fmcYYHHfCxLqYjJOhGsCHFZtEzA=
 github.com/spf13/cobra v1.6.1/go.mod h1:IOw/AERYS7UzyrGinqmz6HLUo219MORXGxhbaJUqzrY=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=

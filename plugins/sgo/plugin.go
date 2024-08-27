@@ -4,7 +4,7 @@ package sgo
 
 import (
 	"github.com/hashicorp/go-plugin"
-	"github.com/sapplications/sgo/plugins"
+	"github.com/nanomarkup/sgo/plugins"
 )
 
 func (p *Plugin) Execute() {

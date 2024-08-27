@@ -4,7 +4,7 @@ apps:
 	sgo
 
 defines:
-	src github.com/sapplications/sgo
+	src github.com/nanomarkup/sgo
 	logDefault 0
 	logTrace 1
 	logDebug 2
