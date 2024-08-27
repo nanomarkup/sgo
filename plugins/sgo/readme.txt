@@ -1,4 +1,4 @@
-package sgo // import "github.com/sapplications/sgo/plugins/sgo"
+package sgo // import "sgo/plugins/sgo"
 Package sgo implements a sgo plugin. It generates Go sources of an application.
 CONSTANTS
 const (

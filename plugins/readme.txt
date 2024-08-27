@@ -1,4 +1,4 @@
-package plugins // import "github.com/sapplications/sgo/plugins"
+package plugins // import "sgo/plugins"
 Package plugins implements common objects for supporting plugins.
 TYPES
 type Builder interface {

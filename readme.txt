@@ -1,4 +1,4 @@
-package sgo // import "github.com/sapplications/sgo"
+package sgo // import "sgo"
 Package app generates Go sources of an application.
 CONSTANTS
 const (
