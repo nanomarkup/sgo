@@ -1,4 +1,4 @@
-package sgo // import "sgo"
+package sgo // import "github.com/nanomarkup/sgo"
 Package app generates Go sources of an application.
 CONSTANTS
 const (

@@ -1,10 +1,10 @@
 package main
 
 import (
-	p4 "github.com/hashicorp/go-plugin"
 	p1 "github.com/nanomarkup/sgo/plugins/sgo"
 	p2 "github.com/nanomarkup/sgo"
 	p3 "github.com/nanomarkup/sgo/helper/hashicorp/hclog"
+	p4 "github.com/hashicorp/go-plugin"
 )
 
 func Execute() {
@@ -39,21 +39,6 @@ func UseGo_PluginHandshakeConfig() p4.HandshakeConfig {
 	return v
 }
 
-type SgoCoderSgoCoderAdapter struct {
-	p2.Coder
-}
-
-func (o *SgoCoderSgoCoderAdapter) SetLogger(a1 p1.Logger) {
-	b1 := a1.(p2.Logger)
-	o.Coder.SetLogger(b1)
-}
-
-func UseSgoCoderSgoCoderAdapterRef() *SgoCoderSgoCoderAdapter {
-	v := &SgoCoderSgoCoderAdapter{}
-	v.Coder = *UseSgoCoderRef()
-	return v
-}
-
 type SgoBuilderSgoBuilderAdapter struct {
 	p2.Builder
 }
@@ -66,6 +51,21 @@ func (o *SgoBuilderSgoBuilderAdapter) SetLogger(a1 p1.Logger) {
 func UseSgoBuilderSgoBuilderAdapterRef() *SgoBuilderSgoBuilderAdapter {
 	v := &SgoBuilderSgoBuilderAdapter{}
 	v.Builder = *UseSgoBuilderRef()
+	return v
+}
+
+type SgoCoderSgoCoderAdapter struct {
+	p2.Coder
+}
+
+func (o *SgoCoderSgoCoderAdapter) SetLogger(a1 p1.Logger) {
+	b1 := a1.(p2.Logger)
+	o.Coder.SetLogger(b1)
+}
+
+func UseSgoCoderSgoCoderAdapterRef() *SgoCoderSgoCoderAdapter {
+	v := &SgoCoderSgoCoderAdapter{}
+	v.Coder = *UseSgoCoderRef()
 	return v
 }
 

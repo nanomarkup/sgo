@@ -1,4 +1,4 @@
-module sgo
+module github.com/nanomarkup/sgo
 
 go 1.21.6
 
@@ -7,7 +7,6 @@ require (
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-plugin v1.6.1
 	github.com/mitchellh/go-ps v1.0.0
-	github.com/nanomarkup/sgo v0.0.0-20240827224213-065ba2b5bf86
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/text v0.17.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c

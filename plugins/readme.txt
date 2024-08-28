@@ -1,4 +1,4 @@
-package plugins // import "sgo/plugins"
+package plugins // import "github.com/nanomarkup/sgo/plugins"
 Package plugins implements common objects for supporting plugins.
 TYPES
 type Builder interface {

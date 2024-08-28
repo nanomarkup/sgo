@@ -9,7 +9,4 @@ improvements & bugs
     - investigate the initializing of working directory in the goRun function. Can we remove it?
 
 core features
-    - add a struct initialization into an item use brackets for overriding global settings, usage: field item { fields }
-      the loader (dl) will transform it to use group item with unique group id
     - use a "named type" as parameter (at least for interfaces)
-    - support pointer to a struct, example: field *struct, where field is *struct
